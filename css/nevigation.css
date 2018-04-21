@@ -1,0 +1,38 @@
+.ul_nevigation
+{/*设置导航栏的框框*/ 
+		margin:0px auto 
+		margin-top:0px
+        width: 100%;   /*框框的宽度  1300px*/  
+        height: 50px;/*框框的高度*/  
+        padding: 0px;/*将框框的padding设置为零，不然会导致框框里的内容与框边缘有间隔*/  
+        border:0px solid #000;/*添加边框*/  
+        margin-bottom:0px
+       
+} 
+     
+.li_nevigation
+{  
+        list-style-type: none;/* 去掉li前的点 */  
+        float: left;/*将li设置成做浮动，变为联动*/  
+        width: 16.6666666666667%;  
+}  
+
+.a_nevigation
+{  
+        display: block;/*将a变成块状*/  
+        width:100% ;/*设置块的宽度256px*/  
+        height: 50px;/*设置块的长度*/  
+        font-family: Microsoft Yahei;  
+        line-height: 50px;/*设置字体在块中的高度*/  
+        background-color: #2f4f4f;  
+        margin: 0px 0px;/*块里的高宽通过margin设置*/  
+        color: #fff;  
+        text-align: center;/*字体居中*/  
+        text-decoration: none;/*去掉下划线*/  
+        font-size: 15px;  
+}  
+
+.a_nevigation:hover
+{  
+    background-color: #2f6f4f;  
+}  

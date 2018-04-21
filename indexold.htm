@@ -1,0 +1,126 @@
+﻿<HTML>
+<HEAD>
+	<TITLE>我的个人主页</TITLE>
+	<META http-equiv=Content-Type content="text/html; charset=gb2312">
+	<LINK href="css/nevigation.css" type=text/css rel=stylesheet>	
+	<LINK href="css/index.css" type=text/css rel=stylesheet>	
+	
+	<script type="text/javascript">
+		//这个函数是关于标签页的
+		function setTab(name,cursel,n)
+		{ 
+			for(i=1;i<=n;i++)
+			{ 
+				var menu=document.getElementById(name+i); 
+				var con=document.getElementById("con_"+name+"_"+i); 
+				menu.className=i==cursel?"hover":""; 
+				con.style.display=i==cursel?"block":"none"; 
+			} 
+		} 
+		
+		//这个函数使用来显示图片的	   
+	    function showPic(whichpic)
+	    {
+		    var source=whichpic.getAttribute("href");
+		    var placeholder=document.getElementById("photo");//获取占位符
+		    photo.setAttribute("src",source);
+		    return false;
+	    }
+	</script>
+	
+</HEAD>
+<BODY leftMargin=0 topMargin=0 onload="MM_preloadImages('images/in_9.jpg'); marginheight="0" marginwidth="0">
+	 <!--nevigation bar-->
+	 <div border="0px" class="nevigation">  
+        <ul class="ul_nevigation">  
+            <li class="li_nevigation"><a class="a_nevigation" href="">首页</a></li>  
+            <li class="li_nevigation"><a class="a_nevigation" href="programme.html">程序之美</a></li>  
+            <li class="li_nevigation"><a class="a_nevigation" href="">游戏之旅</a></li>  
+            <li class="li_nevigation"><a class="a_nevigation" href="">算法之道</a></li>  
+            <li class="li_nevigation"><a class="a_nevigation" href="myblogs.html">我的博客</a></li>  
+            <li class="li_nevigation"><a class="a_nevigation" href="contactme.html">联系我们</a></li>  
+        </ul>  
+    </div>
+	
+	<div class="intr" align="center"  >
+    	<span class="avtar"></span>
+        <p class="peointr">我叫sk，一名计算机专业的学生。</p>
+        <p class="peointr">爱生活，爱美图，爱技术。</p>
+    </div>
+		
+	<div class="title" id="">爱生活</div>
+    
+    <div class="content">
+    	<div class="pic pic1">
+    		<img src="images/h1.jpg" alt="">
+    		<p>家乡-笔锋塔下</p>
+    	</div>
+    	<div class="pic pic2">
+    		<img src="images/h2.jpg" alt="">
+    		<p>家乡-襄河河畔</p>
+    	</div>
+    	<div class="pic pic3">
+    		<img src="images/h3.jpg" alt="">
+    		<p>家乡-太平桥岸</p>
+    	</div>
+    </div>
+    
+    <div class="title" id="">爱美图</div>
+    
+    <div class="content">
+    	<table border="0px" align="center" cellspacing="30px">
+			<tr align="center">
+				<td align="center" width="100px">
+					 <ul style="color:green"> 
+					    <li><a href="images/s1.jpg" onclick="showPic(this);return false;" title="Afire" class="list_pic" style="color:green">figure 1</a></li>
+					    <li><a href="images/s2.jpg" onclick="showPic(this);return false;" title="A1" class="list_pic" style="color:green">figure 2</a></li>
+					    <li><a href="images/s3.jpg" onclick="showPic(this);return false;" title="A2" class="list_pic" style="color:green">figure 3</a></li>
+	 				 </ul>
+				</td>
+				
+				<td >
+					 <img id="photo" src="images/photo.jpg" alt="my image gallery" class="list_pic"/><!--占位符-->
+				</td>
+			</tr>
+		</table>
+    </div>
+    
+	<div class="title" id="part3">爱技术</div>
+	
+    <div class="content">
+    	
+    	<div id="Tab"> 
+			<div class="Menubox"> 
+				<ul> 
+					<li id="menu1" onmouseover="setTab('menu',1,3)" class="a_tab">Web前端</li> 
+					<li id="menu2" onmouseover="setTab('menu',2,3)" >Jsp</li> 
+					<li id="menu3" onmouseover="setTab('menu',3,3)" >Seo</li> 
+				</ul> 
+			</div> 
+			
+			<div class="Contentbox"> 
+				<div id="con_menu_1" class="a_tab"> 
+					<p class="text">曾希望就职于公司，任职Web前端工程师职位</p>
+		            <p class="text">这份工作也让我认识到自己的兴趣所在，但是能力所不在</p>
+		            <p class="text">愿今后尽量避免做前端且避免成为做前端技术的狂热者</p>
+				</div> 
+				
+				<div id="con_menu_2" style="display:none"> 
+				   	<p class="text">作为一个最初掌握的技术</p>
+		            <p class="text">在很长的一段时间  我都用它来开发web,开发应用程序</p>
+		            <p class="text">愿今后可以继续研究它</p>
+				</div> 
+				
+				<div id="con_menu_3" style="display:none"> 
+				    <p class="text">作为一名草根站长</p>
+		            <p class="text">Seo是必不可少的</p>
+		            <p class="text">因此我仍在不断地学习它 并因此享受SEO带来的乐趣</p>
+				</div> 
+				
+			</div> 
+			
+		</div> 
+    </div>
+				
+</BODY>
+</HTML>
