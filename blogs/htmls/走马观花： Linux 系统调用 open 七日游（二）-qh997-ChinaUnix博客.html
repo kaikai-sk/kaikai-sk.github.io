@@ -1,0 +1,1919 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0054)http://blog.chinaunix.net/uid-20522771-id-4419678.html -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+var ua = navigator.userAgent.toLowerCase();
+if(ua.match(/MicroMessenger/i)=="micromessenger") {
+    location.href='http://blog.chinaunix.net/article.php?url='+ window.location.href;
+}
+</script>
+        <style>
+    .Blog_nav1_2 a em { display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+
+<link rel="stylesheet" type="text/css" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/style.css">
+<link rel="stylesheet" type="text/css" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/qqFace.css">
+<link rel="stylesheet" type="text/css" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/asyncbox.css">
+<link rel="stylesheet" type="text/css" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/pager.css">
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/jquery.min.js.下载"></script>
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/jquery.cookies.min.js.下载"></script>
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/AsyncBox.v1.4.5.js.下载"></script>
+<title>走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客</title>
+<meta name="description" content="    接着昨日的旅程，我们应该开始处理具体的子路径了：
+【fs/namei.c】sys_open-&gt;do_sys_open-&gt;do_filp_open-&gt;path_openat-&gt;link_pat">
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/h600.js.下载"></script><script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/h600.js(1).下载"></script>
+
+<script type="text/javascript">
+if(/AppleWebKit.*Mobile/i.test(navigator.userAgent) || (/MIDP|SymbianOS|NOKIA|SAMSUNG|LG|NEC|TCL|Alcatel|BIRD|DBTEL|Dopod|PHILIPS|HAIER|LENOVO|MOT-|Nokia|SonyEricsson|SIE-|Amoi|ZTE/.test(navigator.userAgent))){
+	try{
+		if(!/iPad/i.test(navigator.userAgent)){
+			var oldurl=window.location.href;
+			if(window.location.hostname.indexOf('m.blog.chinaunix.net')==-1){
+			var wapUrl= oldurl.replace('blog.chinaunix.net', "m.blog.chinaunix.net") ;
+			window.location.href = wapUrl;
+			}
+		}
+	}catch(e){}
+}
+</script>
+
+
+<script language="javascript">
+//用户是否在线
+var isOnLine = '';
+
+//消息通知显示和隐藏控制
+function showMenu(){
+	$('#show_message_slide_button').hover(
+		function(){
+			$('#message_slide_div').slideDown(100);											   
+		},
+		function(){
+			
+		}
+	);
+
+	$('#message_slide_div').hover(
+		function(){
+			
+		},
+		function(){
+			$('#message_slide_div').slideUp(100);
+		}
+	);
+}
+$(document).ready(function(){
+	var blog = {'name': '', 'name_url': '', 'brief': ''};
+	
+	//编辑博客名
+	$('#editbna').click(function(){
+		blog.name = $('#bnaspan a').text();
+		var val = '<input id="bnainput" type="text" style="float:left" value="" rel="' +$(this).attr('rel') + '" /><input id="bnasub" type="button" style="float:left" class="btn1"><input id="bnacanl" type="button" style="float:left" class="btn2"><div class="clear"></div>';
+		$('#bnaspan').html(val);
+		$('#bnainput').val(blog.name);
+		$(this).parent().hide();
+	});
+	
+	$('#bnasub').live('click', function(){
+	    var rel = eval('({' + $('#bnainput').attr('rel') + '})');
+		var name = $('#bnainput').val();
+		if(name != blog.name){
+	        $.ajax({
+			    type: "POST",
+			    url: rel.url,	
+			    data: {
+				    'name' : name
+			    },
+			    success:function(data){
+				    if(data == 0){
+						$('#bnaspan').html(blog.name);
+						$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+				    }else if(data == -1){
+                                        showErrorMsg('名称中含有违禁词，请从新编辑!', '消息提示');
+                                    }else{
+						$('#bnaspan').html(data);
+						$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+				    }
+					$('#editbna').parent().show();
+				}
+			});
+		}else{
+		    $('#bnaspan').text(blog.name).html();
+			$('#bnaspan').html('<a href="' + rel.href + '">' + $('#bnaspan').html() + '</a>');
+			$('#editbna').parent().show();
+		}
+	});
+	
+	$('#bnacanl').live('click', function(){
+		var rel = eval('({' + $('#bnainput').attr('rel') + '})');
+		$('#bnaspan').html('<a href="' + rel.href + '">' + blog.name + '</a>');
+		$('#editbna').parent().show();
+	});
+	
+	//编辑签名
+	$('#editbrief').click(function(){
+	    blog.brief = $('#briefem').text();
+		var val = '<input id="brfinput" type="text" style="float:left" value="" rel="' + $(this).attr('rel') + '" /><input id="brfsub" style="float:left"  type="button" class="btn1"><input style="float:left"  id="brfcanl" type="button" class="btn2"><div class="clear"></div>';
+		$('#briefem').html(val);
+		$('#brfinput').val(blog.brief);
+		$(this).parent().hide();
+	});
+	
+	$('#brfsub').live('click', function(){
+	    var url = $('#brfinput').attr('rel');
+		var brief = $('#brfinput').val();
+		if(brief != blog.brief){
+	        $.ajax({
+			    type: "POST",
+			    url: url,	
+			    data: {
+				    'brief' : brief
+			    },
+			    success:function(data){
+				    if(data == 0){
+				        $('#briefem').html(blog.brief);
+				    }else if(data == -1){
+                                        showErrorMsg('签名中含有违禁词，请从新编辑!', '消息提示');
+                                    }else{
+						$('#briefem').html(data);
+				    }
+					$('#editbrief').parent().show();
+				}
+			});
+		}else{
+		    $('#briefem').text(blog.brief).html();
+			$('#editbrief').parent().show();
+		}
+	});
+	
+	$('#brfcanl').live('click', function(){
+		$('#briefem').html(blog.brief);
+		$('#editbrief').parent().show();
+	});
+
+});
+</script>
+<script src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/share.js.下载"></script><link rel="stylesheet" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/share_style0_16.css"></head>
+<body>
+    <div class="Blog_nav1">
+    <div class="Blog_nav1_2 Blog_nav1_2_2">
+		<a href="http://blog.chinaunix.net/"><img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/1.png"></a>
+		<a href="http://www.chinaunix.net/" class="Blog_a1">Chinaunix首页</a> | 
+		<a href="http://bbs.chinaunix.net/" target="_blank">论坛</a> | 
+		<a href="http://u.it168.com/vip/"><font color="red">认证专区</font></a> | 
+		<a href="http://blog.chinaunix.net/" target="_blank">博客</a>
+		<span class="Blog_span1"></span>
+    <a class="Blog_a1" onclick="linkto()" href="http://blog.chinaunix.net/site/login.html">登录</a> | <a href="http://u.it168.com/Register?webid=5&amp;returnUrl=" http:="" blog.chinaunix.net="" uid-20522771-id-4419678.html"="" class="Blog_a1">注册</a></div>
+    </div>
+    <div class="box" style="max-width: 1000px;margin: 0 auto;position: relative;">
+  <!-- 一级导航 -->
+  <div style="margin-top: 10px;">
+    
+	<!--自动提示层-->
+	<style>
+	.bor13221{border:1px #bbb solid;width:206px;position:absolute;top:34px;left:0;background:#fff; z-index:9999;display:none}
+	.bor13221 li{height:26px;line-height:26px;padding-left:6px;color:#555;font-size:14px;cursor:pointer;}
+	.here{background:#f3f3f3;}
+    </style>
+
+	<!--自动提示层-->
+    <div class="Blog_nav1_3" style="position:relative; z-index:9999;">
+	 <div class="bor13221" style="display: none;">
+      <ul>
+      </ul>
+    </div>
+	  <form action="http://blog.chinaunix.net/site/search.html" method="post">
+		<input type="text" autocomplete="off" class="Blog_txt1" id="search_input_id" name="keywords">
+		<select class="Bolg_sel1" name="type" id="search_type_blog">
+		  <option value="blog">博文</option>
+		  <option value="author">博主</option>
+		</select>
+		<input type="submit" value="" name="submit" class="Blog_btn1">
+	 </form>
+    </div>
+    <div class="clear"></div>   
+  </div>
+   <script type="text/javascript">
+  	$(function(){
+		// 判断是否登录
+		$.post("/site/IsLogin.html", "", function(xhr){
+			var xhr = JSON.parse(xhr);
+			var topHtml = '';
+			if(xhr.code == 200){
+				var res = xhr.res;
+				topHtml += '<a href="/uid/'+res.uid+'.html" class="Blog_a1">';
+				if(res.isV){
+					var colors = ['black', '#c80000', '#f6c500'];
+					topHtml += 		'<font color="'+colors[res.renzhenguserStauts]+'">'+res.username+'</font>';
+					topHtml += 	'<em></em>';
+				} else {
+					topHtml += 		'<font color="black">'+res.username+'</font>';
+				}
+				topHtml += '</a> | ';
+				var notices = parseInt(res.newpm)+parseInt(res.newsm)+parseInt(res.newrequest)+parseInt(res.newnotice);
+				topHtml += '<a href="/message/private.html" class="Blog_a1">消息('+notices+')</a><span class="Blog_span2" id="show_message_slide_button"></span> | ';
+				topHtml += '<a href="/member/friend.html" class="Blog_a1">好友</a>| ';
+				topHtml += '<a href="/member/updateprofile.html" class="Blog_a1">个人中心</a> | ';
+				topHtml += '<a href="http://u.it168.com" target="_blank" class="Blog_a1">IT168通行证</a> | ';
+				topHtml += '<a href="/site/logout.html" class="Blog_a2" onclick="linktoOut()">退出</a>';
+				topHtml += '<div class="Blog_nav1_layer1" id="message_slide_div" style="display: none;">';
+				topHtml += 		'<ul>';
+				topHtml += 			'<li><a href="/message/private.html">私人消息('+res.newpm+')</a></li>';
+				topHtml += 			'<li><a href="/message/system.html">系统消息('+res.newsm+')</a></li>';
+				topHtml +=  		'<li><a href="/member/request.html">好友请求('+res.newrequest+')</a></li>';
+				topHtml +=  		'<li><a href="/member/notification.html">通知管理('+res.newnotice+')</a></li>';
+				topHtml +=  	'</ul>';
+				topHtml += '</div>';
+			} else {
+				topHtml +=  '<a class="Blog_a1" onclick="linkto()" href="/site/login.html">登录</a> | ';
+				topHtml += '<a href="http://u.it168.com/Register?webid=5&returnUrl="'+window.location.href+'" class="Blog_a1">注册</a>';
+			}	
+			$(".Blog_nav1_2").append(topHtml);
+			showMenu();
+		});
+		
+		//点击添加进文本框
+		$(".bor13221 li").live( 'click' , function(e){
+			if ( e && e.stopPropagation )
+			{
+				//因此它支持W3C的stopPropagation()方法
+				e.stopPropagation();
+			}
+			else
+			{
+				//否则，我们需要使用IE的方式来取消事件冒泡
+				window.event.cancelBubble = true; 
+			}
+			$('#search_input_id').val($(this).text());
+			$(".bor13221 ul").html('');
+			$(".bor13221").hide();
+		});
+		$(".bor13221 ul li").live({
+			mouseenter:
+			function()
+			{
+				$(".bor13221 ul li").removeClass("here");
+				$(this).addClass('here');
+			},
+			mouseleave:
+			function()
+			{
+				$(".bor13221 ul li").removeClass("here");
+				$(this).removeClass('here');
+			}
+		});
+		//自动提示
+		$('#search_input_id').keyup(function(event){
+			//取消博主的提示
+			var search_type_blog = $('#search_type_blog').val();
+			if(search_type_blog == 'author') return false;
+
+			var key = $(this).val();
+			//获取键值
+			var keycode = event.which; //38 上 40 下
+			var count = $('.bor13221 ul li').length;
+			if(key != '' && keycode != 38 && keycode != 40)
+			{
+				$.getJSON("http://api.sou.it168.com/autoWenKuCloud?jsoncallback=?",{"ty":"json","offset":"0","limit":"10","q":key}, function(result)
+					{
+						var arr = result.data;
+
+						var html ='';
+						for (i=0;i<arr.length ;i++ )   
+						{   
+							html += '<li>'+arr[i]+'</li>';
+						} 
+						
+						$('.bor13221 ul').html(html);
+						(arr.length > 1) ?  $(".bor13221").show() : $(".bor13221").hide();
+					}
+				);
+			}
+			else if(keycode == 38)
+			{
+				if(count > 0)
+				{
+					//遍历li
+					var curr_li_num;
+					$('.bor13221 ul li').each(function(index , dom){
+						if($(dom).attr('class') == 'here')
+						{
+							curr_li_num = index;
+							return false;
+						}
+					}); 
+					var next_li_num;
+					if(typeof(curr_li_num) == 'undefined')
+					{
+						next_li_num = count - 1;
+					}
+					else
+					{
+						if(curr_li_num == 0)
+						{
+							next_li_num = count - 1;
+						}
+						else
+						{
+							next_li_num = curr_li_num - 1;
+						}
+					}
+					$(".bor13221 ul li").removeClass("here");
+					$(".bor13221 ul li:eq(" + next_li_num + ")").addClass("here");
+					$('#search_input_id').val($(".bor13221 ul li:eq(" + next_li_num + ")").text());
+				}
+			}
+			else if(keycode == 40)
+			{
+				if(count > 0)
+				{
+					//遍历li
+					var curr_li_num;
+					$('.bor13221 ul li').each(function(index , dom){
+						if($(dom).attr('class') == 'here')
+						{
+							curr_li_num = index;
+							return false;
+						}
+					}); 
+					var next_li_num;
+					if(typeof(curr_li_num) == 'undefined')
+					{
+						next_li_num = 0;
+					}
+					else
+					{
+						if(curr_li_num == count - 1)
+						{
+							next_li_num = 0;
+						}
+						else
+						{
+							next_li_num = curr_li_num + 1;
+						}
+					}
+					$(".bor13221 ul li").removeClass("here");
+					$(".bor13221 ul li:eq(" + next_li_num + ")").addClass("here");
+					$('#search_input_id').val($(".bor13221 ul li:eq(" + next_li_num + ")").text());
+				}
+			}
+		});
+		$(document).click(function(e){
+			$(".bor13221").hide();
+		});
+
+	});
+  </script>
+    <!-- 头 -->
+  <!-- 推荐博客-->
+  <div class="Blog_header1">
+	    <div class="Blog_header1_1">
+      <p class="Blog_p1"><em><a href="http://blog.chinaunix.net/uid/20522771.html">中断现场</a></em><a href="http://qh997.blog.chinaunix.net/">qh997.blog.chinaunix.net</a></p>      <p class="Blog_p2" style="color:#125A94">你好</p>
+    </div>
+        <div class="Blog_header1_2" id="hide_div1">
+    	<span class="Blog_span3"></span>
+    	<div class="float_div1" style="white-space:nowrap;" onmouseover="javascript:isMove=false" onmouseout="javascript:isMove=true">
+	    <ul id="noticev2" style="line-height: 25px; margin-top: -53px;">  
+		    		    <li><a href="http://blog.chinaunix.net/uid-10718265-id-5030594.html" target="_blank">我写的技术博文 如何才能被推荐？</a></li>
+		    		    <li><a href="http://blog.chinaunix.net/uid-24789255-id-5568211.html" target="_blank">新注册用户开通“博客写作”功能，需要申请与实名认证 </a></li>
+		    		    <li><a href="http://blog.chinaunix.net/uid-24789255-id-198226.html" target="_blank">ChinaUnix博客技术文章推荐标准和规范 </a></li>
+		    	    </ul>
+	    </div>
+    </div>
+            <div class="Blog_header1_3"><a href="http://blog.chinaunix.net/uid/20522771.html">首页</a>　| 　<a href="http://blog.chinaunix.net/uid/20522771/abstract/1.html">博文目录</a>　| 　<a href="http://blog.chinaunix.net/member/profile/uid/20522771.html">关于我</a></div>
+  </div>
+    
+  <!-- 内容部分 -->
+  	<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/XRegExp.js.下载"></script> <!-- XRegExp is bundled with the final shCore.js during build -->
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/shCore.js.下载"></script>
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/shAutoloader.js.下载"></script>
+<link type="text/css" rel="stylesheet" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/shCore.css">
+<link type="text/css" rel="Stylesheet" href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/shThemeDefault.css">
+<link href="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/fck_editorarea.css" rel="stylesheet" type="text/css">
+<style>
+.Blog_p5 em{ display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+  <div class="Blog_contain"> 
+    <!-- 左 -->
+	<style>
+    .Blog_left1_1 p a em { display:inline-block; width:16px; height:13px; background:url(/image/v.jpg) no-repeat; overflow:hidden;}
+</style>
+
+<script language="javascript">
+$(document).ready(function(){
+	$('#ConcernBtn').bind('click',function(){
+			var cuid = '20522771';
+			var url =  '/member/concern.html';
+			var type = $(this).attr('rel');
+		
+			if(type == 'addConcern'){
+				$.ajax({
+					type : 'get',
+					url  : url,
+					data : {'op' : 'ajaxadd' , 'cuid' : cuid, 'random' : Math.random()},
+					success : function(msg){	
+					   if(msg == -1){
+						   showErrorMsg('参数错误！');
+					   } else if (msg == 0){
+						   showErrorMsg('关注失败，没有该用户！');
+					   } else if (msg == 1){
+						   showErrorMsg('关注失败，您已经关注了该用户！');
+					   } else if (msg == 2){
+						   $('#ConcernBtn').val('已关注');
+						   $('#ConcernBtn').attr('rel','delConcern');
+						   showSucceedMsg('关注成功!');
+					   } else if (msg == 3){
+						   showErrorMsg('未知错误');
+					   }
+					}
+				});	
+			} else if ( type == 'delConcern'){
+				$.ajax({
+					type : 'get',
+					url  : url,
+					data : {'op' : 'ajaxdel' , 'cuid' : cuid, 'random' : Math.random()},
+					success : function(msg){
+					   if(msg == 0){
+						   showErrorMsg('参数错误！','消息提示');
+					   } else if (msg == 1){
+						   showErrorMsg('操作失败，请尝试刷新页面重试！','消息提示');
+					   } else if (msg == 2){
+						   $('#ConcernBtn').val('加关注');
+						   $('#ConcernBtn').attr('rel','addConcern');
+						   showSucceedMsg('成功取消关注！','消息提示');
+					   } else if (msg == 3){
+						   showErrorMsg('未知错误！','消息提示'); 
+					   }
+					}
+				});	
+			}
+	});					   
+});
+
+//加好友
+function addFriend(fuid, url){
+	if(fuid == '' || fuid.length == 0){
+		showErrorMsg('缺少参数！','信息提示');
+		return false;
+	}
+	$.ajax({
+		   type : 'get',
+		   url : url,
+		   data : {'op' : 'add', 'fuid' : fuid , 'random' : Math.random()},
+		   success : function(msg){
+				if(msg == -1){
+					showErrorMsg('参数错误！','消息提示');
+				} else if (msg == -2){
+					showErrorMsg('添加好友失败,没有该用户的信息！','消息提示');
+				} else if (msg == -3){
+					showErrorMsg('添加好友失败,你不能添加自己为好友！','消息提示');
+				} else if (msg == -4){
+					showErrorMsg('添加好友未知错误,该错误已被记录！','消息提示');
+				} else if (msg == -5){
+					showErrorMsg('添加好友失败,你之前已经发送过好友请求,请耐心等待对方同意申请！','消息提示');
+				} else if (msg == -6){
+					showErrorMsg('添加好友失败,你们已经是好友了！','消息提示');
+				} else {
+					$.cover(true);
+					asyncbox.open({
+						id : 'addFriend',
+						title : '添加好友',
+						url : url,
+						data : {'op' : 'add', 'fuid' : fuid , 'random' : Math.random()},
+						width : 490,
+						height : 180,
+						scroll : 'no',
+						callback : function(action) {
+							if (action == 'close'){
+								$.cover(false);
+							}	
+						}
+					});	
+				}
+		   }
+	});	
+	
+}
+
+//发送短消息
+function postMessage(msguid, url){
+	if(msguid == '' || msguid.length == 0){
+		showErrorMsg('缺少参数！','信息提示');
+		return false;
+	}
+	
+	$.ajax({
+		   type : 'post',
+		   url : url,
+		   data : {'op' : 'ajaxpost', 'msguid' : msguid , 'random' : Math.random()},
+		   success : function(msg){
+				if(msg == -1){
+					showErrorMsg('发送失败，缺少收件人对象！','消息提示');
+				} else if(msg == -2){
+					showErrorMsg('发送失败，自己不能给自己发送短消息！','消息提示');
+				} else {
+					$.cover(true);
+					asyncbox.open({
+						id : 'postMessage',
+						title : '发送短消息',
+						url : url,
+						data : {'op' : 'ajaxpost', 'msguid' : msguid , 'random' : Math.random()},
+						width : 510,
+						height : 255,
+						scroll : 'no',
+						callback : function(action) {
+							if (action == 'close'){
+								$.cover(false);
+							}	
+						}
+					});	
+				}
+		   }
+	});	
+}
+
+</script>
+<div class="Blog_left">
+      <div class="Blog_left1 Blog_bg1">
+        <div class="Blog_left1_1">
+			<!-- 专家博客-->
+			<a href="http://blog.chinaunix.net/uid/20522771.html">                            <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar.php">
+                        </a>
+                        <p><a href="http://blog.chinaunix.net/uid/20522771.html">qh997</a></p>
+                     </div>
+        <ul class="Blog_ul1 Blog_noline1">
+          <li>博客访问： 85730 </li>
+          <li>博文数量： 14 </li>
+          <li>博客积分： 185 </li>
+          <!--<li>专家积分： 180</li>-->
+          <li>博客等级： 入伍新兵 </li>
+		  <li>技术积分： 814 </li>
+          <li>用  户  组：  普通用户</li>
+          <li>注册时间： 2012-12-19 21:27 </li>
+                            </ul>  
+
+
+        
+                <div class="HT_line3 HT_line3_1"></div>
+        <ul class="Blog_ul2">
+          <li><input type="button" value="加关注" id="ConcernBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+          <li><input type="button" value="短消息" id="postMessageBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+          <li><input type="button" value="论坛" onclick="location.href=&#39;http://bbs.chinaunix.net&#39;"></li>
+          <li><input type="button" value="加好友" id="addFriendBtn" onclick="showErrorMsg(&#39;操作失败,您需要先登录!&#39;, &#39;消息提示&#39;, &#39;/site/login.html&#39;)"></li>
+        </ul>
+              </div>
+            <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">个人简介</div>
+        <p class="Blog_p3">对于我们的阶级敌人 只有仇恨 没有宽恕</p>
+      </div>
+        
+         
+      <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">文章分类</div>
+        <div class="Blog_left2_1">
+          <p class="Blog_p4"><a href="http://blog.chinaunix.net/uid/20522771/list/1.html">全部博文</a>（14）</p>
+          <ul id="blogCla">
+                            <li><a href="http://blog.chinaunix.net/uid/20522771/cid-170035-list-1.html" title="Linux Kernel">Linux Kernel</a>（14）
+                                </li>
+                            <li><a href="http://blog.chinaunix.net/uid/20522771/cid--1-list-1.html" title="未分配的博文">未分配的博文</a>（0）
+                                </li>
+                      </ul>
+        </div>
+      </div>
+      	              <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">文章存档</div>
+        <div class="Blog_left2_1" id="blogdtr">
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/20522771/year-2014-list-1.html">2014年</a>（7）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/20522771/year-201408-list-1.html">2014年08月</a>（7）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/20522771/year-2013-list-1.html">2013年</a>（2）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/20522771/year-201307-list-1.html">2013年07月</a>（1）</li>
+                        <li><a href="http://blog.chinaunix.net/uid/20522771/year-201301-list-1.html">2013年01月</a>（1）</li>
+                      </ul>
+                    <p class="Blog_p4"><span class="Blog_jia1"></span><a href="http://blog.chinaunix.net/uid/20522771/year-2012-list-1.html">2012年</a>（5）</p>
+          <ul style="display:none;" class="Blog_ul3 zk">
+                        <li><a href="http://blog.chinaunix.net/uid/20522771/year-201212-list-1.html">2012年12月</a>（5）</li>
+                      </ul>
+                  </div>
+      </div>
+      	  	        <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">我的朋友</div>
+        <ul class="Blog_ul4">
+                    <li><a href="http://blog.chinaunix.net/uid/27717694.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(1).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/27717694.html" title="wangbaolin719">wangbaol</a></p>
+          </li>
+                  </ul>
+      </div>
+	  	        <div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">最近访客</div>
+        <ul class="Blog_ul4">
+                    <li><a href="http://blog.chinaunix.net/uid/29672047.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(2).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/29672047.html" title="liuyingjiewjs">liuyingj</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31402106.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(3).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31402106.html" title="Kernel_Lover">Kernel_L</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/130572.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(4).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/130572.html" title="csgerry">csgerry</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31420017.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(5).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31420017.html" title="EricJiang_">EricJian</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31501822.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(6).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31501822.html" title="FLYLOVE_">FLYLOVE_</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/7552863.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(7).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/7552863.html" title="tyblly">tyblly</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/140177.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(8).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/140177.html" title="hejianet">hejianet</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31488896.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(9).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31488896.html" title="yangerkuncpp">yangerku</a></p>
+          </li>
+                    <li><a href="http://blog.chinaunix.net/uid/31484169.html">              <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/avatar(10).php">
+              </a>
+            <p><a href="http://blog.chinaunix.net/uid/31484169.html" title="我是怪蜀黍520">我是怪蜀</a></p>
+          </li>
+                  </ul>
+      </div>
+	           <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">微信关注</div>
+        <div class="">
+                <div class="" style="float:left; margin-right:5px;">
+                 <img width="90" height="90" alt="" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/IT168.jpg">
+                 </div><br>
+                <div class="" style="margin-top:10px;">
+                 <p class="">
+                         IT168企业级官微
+                </p>
+                 <p class="">
+
+                 <br><br>
+                 微信号：IT168qiye
+                </p>
+                </div>
+        </div>
+<hr size="1" style="clear:both;">
+        <div class="" style="clear:both;">
+                <div class="" style="float:left; margin-right:5px;">
+                 <img width="90" height="90" alt="" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/itpub.jpg">
+                 </div><br>
+                <div class="" style="margin-top:10px;">
+                 <p class="">
+                         系统架构师大会
+                </p>
+                 <p class="">
+
+                 <br><br>
+                 微信号：SACC2013
+                </p>
+                </div>
+        </div>
+
+</div>
+      <!--div class="Blog_left2 Blog_bg1">
+        <div class="Blog_tit1">订阅</div>
+        <ul class="Blog_ul5">
+          <li><a href="/blog/rss/uid/20522771.html" class="Blog_a4"></a></li>
+          <li><a href="http://www.google.com/ig/add?feedurl=http%3A%2F%2Fblog.chinaunix.net%2Fuid%2F20522771.html" class="Blog_a5"></a></li>
+        </ul>
+      </div-->
+            <div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">推荐博文</div>
+        <ul class="Blog_ul6">
+				  			<li>·<a href="http://blog.chinaunix.net/uid-28541347-id-5783785.html" title="virtio前后端配合限速分析 ——VIRTIO_RING_F_EVENT_IDX">virtio前后端配合限速分析 —...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-20099692-id-5783747.html" title="不同IDC之间postgresql 9.2 流复制配置过程">不同IDC之间postgresql 9.2 ...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-30105034-id-5783680.html" title="kafka及kafka-manager安装">kafka及kafka-manager安装</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-29110326-id-5783677.html" title="Sed命令中含有转义字符的解决方法">Sed命令中含有转义字符的解决...</a></li>
+		  			<li>·<a href="http://blog.chinaunix.net/uid-20652253-id-5783649.html" title="HAproxy + Keepalived (AA mode)">HAproxy + Keepalived (AA mo...</a></li>
+		  						  			<li>·<a href="http://blog.itpub.net/22664653/viewspace-2151709" title="Redis 删除1.2亿指定前缀的key">Redis 删除1.2亿指定前缀的ke...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/31442014/viewspace-2151671" title="使用python进行Oracle数据库性能趋势分析">使用python进行Oracle数据库...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/31523382/viewspace-2151661" title="mysql-innodb关键特性">mysql-innodb关键特性</a></li>
+		  			<li>·<a href="http://blog.itpub.net/31523382/viewspace-2151609" title="mysql-物理备份-Percona xtrabackup">mysql-物理备份-Percona xtra...</a></li>
+		  			<li>·<a href="http://blog.itpub.net/31510618/viewspace-2151588" title="一位技术大牛对新手的一点建议">一位技术大牛对新手的一点建...</a></li>
+		  				
+        </ul>
+      </div>
+            <!--div class="Blog_left2 Blog_left3 Blog_bg1">
+        <div class="Blog_tit1">热词专题</div>
+        <ul class="Blog_ul6">
+                        <li class="no_line1">·<a href="/zt/1000/linux_1000000.shtml" target='blank' title='lua编译(linux)'>lua编译(linux)</a></li>
+          <!--              <li>·<a href="http://www.dataguru.cn/zhuanti/hadoop220peizhi.shtml" target='blank' title='配置hadoop2.2.0格式化namenode问题'></a></li>
+              <li>·<a href="http://www.dataguru.cn/zhuanti/hadoopshouce.shtml" target='blank' title='hadoop2.2.0安装手册'></a></li>-->
+        
+      
+	  
+</div>
+<script language="javascript">
+$(document).ready(function(){
+    /*目录树JS效果*/
+	$('#blogCla li > span').click(function(){
+		var cla = $(this).attr('class');
+		if(cla == 'Blog_jia1'){
+			//$('#blogCla li > span').removeClass('Blog_jian1').addClass('Blog_jia1');
+			//$('#blogCla li > .zk').css('display', 'none');
+				
+			$(this).removeClass('Blog_jia1').addClass('Blog_jian1');
+            $(this).parent().children('.zk').css('display', 'block');
+		}else{
+			$(this).removeClass('Blog_jian1').addClass('Blog_jia1');
+            $(this).parent().children('.zk').css('display', 'none');
+		}
+	});
+		
+	$('#blogdtr > p > span').click(function(){
+		var cla = $(this).attr('class');
+		if(cla == 'Blog_jia1'){
+			//$('#blogdtr > .Blog_p4 > span').removeClass('Blog_jian1').addClass('Blog_jia1');
+			//$('#blogdtr ul').css('display', 'none');
+				
+			$(this).removeClass('Blog_jia1').addClass('Blog_jian1');
+            $(this).parent().next().css('display', 'block');
+		}else{
+			$(this).removeClass('Blog_jian1').addClass('Blog_jia1');
+            $(this).parent().next().css('display', 'none');
+		}
+	});
+});
+</script>
+    <!-- 右 -->
+    <div class="Blog_right1">
+      <div class="Blog_right1_1 Blog_right1_11">
+          <!--推荐博文-->
+        <div class="Blog_right1_2 ">
+            <div class="tit0307">
+                <a href="http://blog.chinaunix.net/uid-20522771-id-4419678.html">走马观花： Linux 系统调用 open 七日游（二）</a>
+                            </div>
+            <div class="tit0307_1">
+                                <b class="yuanchuang"></b>
+                                <p><span>分类：</span> LINUX</p><p>2014-08-15 16:13:17</p>
+            </div>
+      
+          <div class="Blog_con2">
+            <div class="Blog_con3">
+              
+			                <p></p>
+            </div>
+           <div class="Blog_wz1" style="word-wrap: break-word;">
+						&nbsp;&nbsp;&nbsp;&nbsp;接着昨日的旅程，我们应该开始处理具体的子路径了：<span style="color:#666666;font-size:14px;"><br>
+【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;">-&gt;do_sys_open-&gt;do_filp_open-&gt;path_openat-&gt;link_path_walk</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code841&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code841" class="codeText">
+		<p>
+			&nbsp; ...
+		</p>
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1795" class="dp-css">
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#FF0000;">err</span> <span style="color:#0000CC;">=</span> walk_component<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">,</span> <span style="color:#0000CC;">&amp;</span><span style="color:#0000FF;">next</span><span style="color:#0000CC;">,</span> LOOKUP_FOLLOW<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#FF0000;">err</span> <span style="color:#0000CC;">&lt;</span> 0<span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return <span style="color:#FF0000;">err</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				<br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#FF0000;">err</span><span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#FF0000;">err</span> <span style="color:#0000CC;">=</span> nested_symlink<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span><span style="color:#0000FF;">next</span><span style="color:#0000CC;">,</span> nd<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#FF0000;">err</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return <span style="color:#FF0000;">err</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span> 
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;现在，我们可以肯定当前的子路径一定是一个中间节点（文件夹或符号链接），既然是中间节点，那么就需要“走过”这个节点。咱们来看看 walk_component 是怎么“走过”中间节点的。在此之前先小小剧透一下，当 walk_component 返回时，如果当前子路径是一个真正的目录的话，那么 nd 已经“站在”当前节点上并等着下一次循环再往前“站”一步。但如果当前子路径只是一个符号链接呢？这时 nd 会原地不动，告诉你个小秘密：nd 是很有脾气的，如果不是真正的目录绝不会站上去；而 next 就随和得多，它会自告奋勇不管是不是真正的目录先站上去再说。接着 next 会和 nest_symlink 联手帮助 nd 在下一个真正的目录“上位”。<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;">-&gt;do_sys_open-&gt;do_filp_open-&gt;path_openat-&gt;link_path_walk-&gt;walk_component</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code168&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code168" class="codeText">
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1522" class="dp-css">
+			<li>
+				<span style="color:#000000;">static inline <span style="color:#FF0000;">int</span> walk_component<span style="color:#0000CC;">(</span>struct nameidata <span style="color:#0000CC;">*</span>nd<span style="color:#0000CC;">,</span> struct path <span style="color:#0000CC;">*</span>path<span style="color:#0000CC;">,</span><br>
+</span> 
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#FF0000;">int</span> follow<span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				<span style="color:#0000CC;">{</span> 
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1532" class="dp-css">
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>unlikely<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>last_type <span style="color:#0000CC;">!</span><span style="color:#0000CC;">=</span> LAST_NORM<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return handle_dots<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">,</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>last_type<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;对于这个子路径可以分成三种情况，第一，它可能是“.”或“..”；第二，这就是一个普通的目录；第三，它是一个符号链接。我们先来看第一种可能，对于“.”或“..”，是在 handle_dots 单独处理的。<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;">-&gt;do_sys_open-&gt;do_filp_open-&gt;path_openat-&gt;link_path_walk-&gt;walk_component-&gt;handle_dots</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code698&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code698" class="codeText">
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1487" class="dp-css">
+			<li>
+				<span style="color:#000000;">static inline <span style="color:#FF0000;">int</span> handle_dots<span style="color:#0000CC;">(</span>struct nameidata <span style="color:#0000CC;">*</span>nd<span style="color:#0000CC;">,</span> <span style="color:#FF0000;">int</span> type<span style="color:#0000CC;">)</span><br>
+</span> 
+			</li>
+			<li>
+				<span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>type <span style="color:#0000CC;">=</span><span style="color:#0000CC;">=</span> LAST_DOTDOT<span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>flags <span style="color:#0000CC;">&amp;</span> LOOKUP_RCU<span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>follow_dotdot_rcu<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return <span style="color:#0000CC;">-</span>ECHILD<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span> <span style="color:#0000FF;">else</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;follow_dotdot<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;return 0<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				<span style="color:#0000CC;">}</span> 
+			</li>
+		</ol>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;这里只是针对“..”做处理（1489）；如果是“.”的话那就就代表的是当前路径，直接返回就好了。前面说过 
+do_filp_open 会首先使用 RCU 策略进行操作，如果不行再用普通策略。这里就可以看出只有 RCU 失败才会返回 -ECHILD 
+以启动普通策略。但是大家有没有发现，这里并没有对 follow_dotdot(_rcu) 
+的返回值进行检查，为什么？这是因为“..”出现在路径里就表示要向“上”走一层，也就是要走到父目录里面去，而父目录一定是存在内存中而且对于当前的进程来说一定也是合法的，否则在读取父目录的时候就已经出错了。接着我们就来“跟随 ..”。<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_sys_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_filp_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>path_openat<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>link_path_walk<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>walk_component<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>handle_dots &gt; follow_dotdot_rcu</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code74&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code74" class="codeText">
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1136" class="dp-css">
+			<li>
+				<span style="color:#000000;">static <span style="color:#FF0000;">int</span> follow_dotdot_rcu<span style="color:#0000CC;">(</span>struct nameidata <span style="color:#0000CC;">*</span>nd<span style="color:#0000CC;">)</span><br>
+</span> 
+			</li>
+			<li>
+				<span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;set_root_rcu<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span> 
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;首先设置 nd 的根目录（nd.root），还记得我们在哪里设置过这个成员么？没错，在 path_init 里，如果是绝对路径的话就会把这个 nd.root 设置成当前进程的根目录（其实还可以在 do_file_open_root 里预设这个值，所以为了和系统根目录区分，我们称 nd.root 为预设根目录），但如果是相对路径的话，就没有对 nd.root 进行初始化。为啥要分两步走呢？还是因为效率问题，任何一个目录都是一种资源，根目录也不例外，要获取某种资源必定会有一定的系统开销（在这里就是顺序锁），况且很有可能辛辛苦苦获得了这个根目录资源却根本就用不上，造成无端的浪费，所以 Kernel 本着能不用就不用的原则不到万不得已绝不轻易占用系统资源。现在的情况是路径中出现了“..”，就说明需要向上走一层，也就有可能会访问根目录，所以现在正是获取根目录的时候。拿到根目录后就进入一个小小的循环，有人问了：不就是往上走一层么，为啥是个循环呢？请往下看：<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_sys_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_filp_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>path_openat<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>link_path_walk<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>walk_component<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>handle_dots &gt; follow_dotdot_rcu</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code947&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code947" class="codeText">
+		<p>
+			&nbsp; ...
+		</p>
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1140" class="dp-css">
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">while</span> <span style="color:#0000CC;">(</span>1<span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry <span style="color:#0000CC;">=</span><span style="color:#0000CC;">=</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>root<span style="color:#0000CC;">.</span>dentry <span style="color:#0000CC;">&amp;</span><span style="color:#0000CC;">&amp;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>mnt <span style="color:#0000CC;">=</span><span style="color:#0000CC;">=</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>root<span style="color:#0000CC;">.</span>mnt<span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry <span style="color:#0000CC;">!</span><span style="color:#0000CC;">=</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>mnt<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt_root<span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struct dentry <span style="color:#0000CC;">*</span>old <span style="color:#0000CC;">=</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struct dentry <span style="color:#0000CC;">*</span>parent <span style="color:#0000CC;">=</span> old<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_parent<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned seq<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				<br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seq <span style="color:#0000CC;">=</span> read_seqcount_begin<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>parent<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_seq<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span>read_seqcount_retry<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>old<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_seq<span style="color:#0000CC;">,</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>seq<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;goto failed<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry <span style="color:#0000CC;">=</span> parent<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>seq <span style="color:#0000CC;">=</span> seq<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#0000CC;">!</span>follow_up_rcu<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>seq <span style="color:#0000CC;">=</span> read_seqcount_begin<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_seq<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span> 
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 通过观察这个循环体我们发现只有 follow_up_rcu 返回非 0 的时候才会进入循环，其余几种情况都会通过 break 直接跳出循环。那么这几种情况都是啥意思呢？我们一个一个来看：<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 首先，如果当前路径就是预设根目录的话（1141）就什么也不做直接跳出循环（都已经到根目录了不退出还等啥呢，大家可以在根目录试试这个命令“cd ../../”，看看有什么效果）；其次，当前路径不是预设根目录，但也不是当前文件系统的根目录（1145），那么向上走一层也是很简单的事，直接将父目录项拿过来就是了（1153）；到最后，当前路径一定是某个文件系统的根目录，往上走有可能就会走到另一个文件系统里去了。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;看到这里可能有人要问了，啥叫文件系统的根目录，文件系统和文件系统又有啥关系？别着急，我们祭出本次旅途的第二张导游图，再配合我的讲解相信大家很快就会明白的。<br>
+<span style="color:#666666;font-size:14px;">【mount 结构图】</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/20522771_1407316904uGqM.png" alt="" height="514" width="1001"><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;这是一个关于 mount（挂载）的故事。在 Kernel 世界里，挂载是一项很了不起的特性，它可以将不同类型的文件系统组合成一个有机的整体，从使用者角度来看不同的文件系统并没有什么区别，那么 Kernel 是怎么做到呢？首先，Kernel 会为每个文件系统准备一个 mount 结构，然后再把这个结构加入到 vfs 这颗大树上就好了。这么一个小小的 mount 结构就这么神奇？请看图，一个 mount 中有三个很重要的成员，他们分别指向父 mount 结构（6）、本文件系统自己的根目录（7）和本文件系统的挂载点（8），前两个很好理解，那么挂载点是什么呢？简单地说挂载点就是父级文件系统的某个目录，一旦将某个文件系统挂载到某个目录上，这个目录就成了该文件系统的根目录了。并且该目录的标志位 DCACHE_MOUNTED 将被置位，这将表明这个目录已经是一个挂载点了，如果要访问这个目录的话就要顺着 mount 结构访问另一个文件系统了，原来的内容将变得不可访问。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;现在我们从图的左边讲起，带你一窥 mount 的风采。一个进程有一个叫 root 的 path 结构，它就是本进程的根目录（大多数情况下它就是系统根目录），root 中两个成员分别指向某个文件系统的 mount 结构（其实是指向 mount.mnt 但这样理解没问题）（1）和该文件系统的根目录（2），这个文件系统就是所谓根文件系统（在图中就是 rootfs）。由于它是根文件系统，所以它的父 mount 结构就是它自己（4）它的挂载点就是它自己的根目录（5）。但是 rootfs 只是一个临时的根文件系统，在 Kernel 的启动过程中加载完 rootfs 之后会紧接着解压缩 initramfs 到 rootfs 中，这里面包括了驱动以及加载真正的根文件系统的工具，Kernel 通过加载这些驱动、使用这些工具实现了挂载真正的根文件系统。之后 rootfs 将推出历史舞台，但作为文件系统的总根 rootfs 并不会被卸载（注）。图中 fs1 就是所谓的真正的根文件系统，Kernel 把它挂载到了 rootfs 的根目录上（8），并且将它的父 mount 结构指向了 rootfs（6）。这时访问根目录的话就会直接访问到 fs1 的根目录，而 rootfs 就好像不存在了一样。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;再看 fs1，他有一个子目录“mnt/”，以及“mnt/”的子目录“a”，此时路径“/mnt/a/”是可访问的。但现在我们还有另一个文件系统 fs2，我们把它挂载到“/mnt/”上会发生什么呢？首先 fs2 的父 mount 将指向 fs1（9），然后 fs2 的挂载点将指向 “/mnt/”（10），同时“mnt/”的 DCACHE_MOUNTED 将被置位。此时路径“/mnt/a/”就不可访问了，取而代之的是“/mnt/b/”。本着不怕麻烦的精神我们再折腾一下，把 fs3 也挂载到“/mnt/”上，这时和挂载 fs2 一样父 mount 将指向 fs2（11），但是挂载点应该指向哪里呢？答案是 fs2 的根目录（12）。这时“/mnt/b/”也消失了，我们只能看见“/mnt/c”了。这样整个结构就形成了一个挂载的序列，最后挂载的在序列末尾，Kernel 可以很容易的通过这个序列找到最初的挂载点和最终的文件系统。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;在顺序查找的情景下，当遇到一个目录时 Kernel 会判断这个目录是不是挂载点（检查 DCACHE_MOUNTED 标志位），如果是就要找到挂载到这个目录的文件系统，继而找到该文件系统的根目录，然后在判断这个根目录是不是挂载点，如果是那就再往下找直到某个文件系统的根目录不再是挂载点。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;反向查找也和顺序查找类似，我们结合代码来看：<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_sys_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_filp_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>path_openat<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>link_path_walk<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>walk_component<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>handle_dots &gt; follow_dotdot_rcu &gt; follow_up_rcu</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code944&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code944" class="codeText">
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="884" class="dp-css">
+			<li>
+				<span style="color:#000000;">static <span style="color:#FF0000;">int</span> follow_up_rcu<span style="color:#0000CC;">(</span>struct path <span style="color:#0000CC;">*</span>path<span style="color:#0000CC;">)</span><br>
+</span> 
+			</li>
+			<li>
+				<span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;struct mount <span style="color:#0000CC;">*</span>mnt <span style="color:#0000CC;">=</span> real_mount<span style="color:#0000CC;">(</span>path<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;struct mount <span style="color:#0000CC;">*</span>parent<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;struct dentry <span style="color:#0000CC;">*</span>mountpoint<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				<br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;parent <span style="color:#0000CC;">=</span> mnt<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt_parent<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>parent<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt <span style="color:#0000CC;">=</span><span style="color:#0000CC;">=</span> path<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt<span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;mountpoint <span style="color:#0000CC;">=</span> mnt<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt_mountpoint<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;path<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>dentry <span style="color:#0000CC;">=</span> mountpoint<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;path<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt <span style="color:#0000CC;">=</span> <span style="color:#0000CC;">&amp;</span>parent<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;return 1<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				<span style="color:#0000CC;">}</span> 
+			</li>
+		</ol>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;首先检查当前的文件系统是不是根文件系统（891），如果是就直接返回 0 并结束循环。如果不是的话就要像上走一层走到父 mount 代表的文件系统中去，这个向上走的过程也很简单，直接取得挂载点就可以了（894）当然 mount 也需要跟新一下（895）。但仅仅这样做是不够的，因为很有可能现在的这个目录也是该文件系统的根目录，这就需要返回 1，启动循环再来一次。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;当跳出这个 while(1) 循环时我们已经站在某个目录上了，一般来说这个目录就是我们想要的目标，而不会是一个挂载点，但也有例外。请看 while(1) 循环中第一个 if 和 follow_up_rcu 中的那个 if，想必大家已经发现了，当遇到（预设）根目录的时候会直接退出循环，而这时我们的位置就相当于站在图中 rootfs 的根目录上，这显然不是我们想要的，我们想要站在 fs1 的根目录上。这就需要接下来的循环，再顺着 mount 结构往下走。<br>
+<span style="color:#666666;font-size:14px;">【fs/namei.c】</span><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;">sys_open</span><span style="font-size:12px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_sys_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>do_filp_open<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>path_openat<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>link_path_walk<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>walk_component<span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="color:#666666;font-size:14px;"><span style="font-size:12px;"> &gt; </span></span></span></span>handle_dots &gt; follow_dotdot_rcu</span></span></span></span><br>
+<div>
+	<div class="codeheads">
+		<p>
+			点击(<span style="cursor:pointer;color:red;" .="code_hide(&#39;code379&#39;)">此处</span>)折叠或打开
+		</p>
+	</div>
+	<div id="code379" class="codeText">
+		<p>
+			&nbsp; ...
+		</p>
+		<ol style="margin:0 1px 0 0px;padding-left:40px;" start="1161" class="dp-css">
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">while</span> <span style="color:#0000CC;">(</span>d_mountpoint<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span> <span style="color:#0000CC;">{</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struct mount <span style="color:#0000CC;">*</span>mounted<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mounted <span style="color:#0000CC;">=</span> __lookup_mnt<span style="color:#0000CC;">(</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>mnt<span style="color:#0000CC;">,</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#0000CC;">!</span>mounted<span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>mnt <span style="color:#0000CC;">=</span> <span style="color:#0000CC;">&amp;</span>mounted<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry <span style="color:#0000CC;">=</span> mounted<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>mnt<span style="color:#0000CC;">.</span>mnt_root<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>seq <span style="color:#0000CC;">=</span> read_seqcount_begin<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_seq<span style="color:#0000CC;">)</span><span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000FF;">if</span> <span style="color:#0000CC;">(</span><span style="color:#0000CC;">!</span>read_seqretry<span style="color:#0000CC;">(</span><span style="color:#0000CC;">&amp;</span>mount_lock<span style="color:#0000CC;">,</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>m_seq<span style="color:#0000CC;">)</span><span style="color:#0000CC;">)</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;goto failed<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#0000CC;">}</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>inode <span style="color:#0000CC;">=</span> nd<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>path<span style="color:#0000CC;">.</span>dentry<span style="color:#0000CC;">-</span><span style="color:#0000CC;">&gt;</span>d_inode<span style="color:#0000CC;">;</span><br>
+			</li>
+			<li>
+				&nbsp;&nbsp;&nbsp;&nbsp;return 0<span style="color:#0000CC;">;</span> 
+			</li>
+		</ol>
+		<p>
+			&nbsp; ...
+		</p>
+	</div>
+</div>
+&nbsp;&nbsp;&nbsp;&nbsp;d_mountpoint() 就是检查标志位 DCACHE_MOUNTED（1161），然后在某个散列表中查找属于这个挂载点的 mount 结构，如果找到了（如果某个目录既是挂载点但又没有任何文件系统挂载在上面那就说明这个目录可能拥有自动挂载的属性），就往下走一层，走到挂载文件系统的根目录上（1167），然后再回到 1161 行再判断、查找、向下走，周而复始直到某个非挂载点。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 从 follow_dotdot_rcu 返回后，对“.”和“..”的处理也完成了，程序将直接返回 link_path_walk 进入对下一个子路径的处理。<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 休息一下，我们马上回来。<br>
+<br>
+<span style="font-size:14px;">注：摘自《深度探索 Linux 操作系统》王柏生</span><br>                                   </div>
+            <!-- <div class="Blog_con3_1">管理员在2009年8月13日编辑了该文章文章。</div> -->
+            <div class="Blog_con2_1 Blog_con3_2">
+              <div>
+			  <!--<img src="/image/default/tu_8.png">-->
+			  <!-- JiaThis Button BEGIN -->
+				<div class="bdsharebuttonbox bdshare-button-style0-16" data-bd-bind="1521118975889"><a class="bds_more" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="more"></a><a class="bds_qzone" title="分享到QQ空间" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="qzone"></a><a class="bds_tsina" title="分享到新浪微博" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="tsina"></a><a class="bds_tqq" title="分享到腾讯微博" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="tqq"></a><a class="bds_renren" title="分享到人人网" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="renren"></a><a class="bds_weixin" title="分享到微信" href="http://blog.chinaunix.net/uid-20522771-id-4419678.html#" data-cmd="weixin"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+				<!-- JiaThis Button END -->
+			  </div>
+              阅读(2836) | 评论(0) | 转发(5) |
+			                <div class="HT_line3"></div>
+            </div>
+            
+            <div class="Blog_con3_3">
+              <div><span id="digg_num">1</span><a href="javascript:void(0)" id="digg" bid="4419678" url="/blog/digg.html"></a></div>
+              <p>上一篇：<a href="http://blog.chinaunix.net/uid-20522771-id-4419666.html">走马观花： Linux 系统调用 open 七日游（一）</a></p>
+              <p>下一篇：<a href="http://blog.chinaunix.net/uid-20522771-id-4419703.html">走马观花： Linux 系统调用 open 七日游（三）</a></p>    
+            </div>
+            
+          </div>
+          		  <!--
+          <div class="Blog_con3_4 Blog_con3_5">
+            <div class="Blog_tit2 Blog_tit7">热门推荐</div>
+            <ul>
+			              <li><a href="" title="" target='blank' ></a></li>
+			            </ul>
+          </div>
+		  -->
+        </div>
+      </div>
+      <div class="Blog_right1_7" id="replyList">
+		<div class="Blog_tit3">给主人留下些什么吧！~~</div>
+				<!--暂无内容-->
+				<!-- 评论分页-->
+		<div class="Blog_right1_6 Blog_right1_12">
+        		</div>
+		<!-- 评论分页-->
+        <div class="Blog_right1_10">
+          <div class="Blog_tit3">评论热议</div>
+		  		 <!--未登录 -->
+        <div class="Blog_right1_8">
+          <div class="nologin_con1"> 请登录后评论。
+            <p><a href="http://blog.chinaunix.net/site/login.html" onclick="linkto()">登录</a> <a href="http://sso.chinaunix.net/Register?return_url=http%3A%2F%2Ft.cublog.com%2F">注册</a></p>
+          </div>
+        </div>
+       
+		
+        </div>
+        <div style="text-align:center;margin-top:10px;">
+            <iframe frameborder="0" scrolling="no" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/j.html" style="width: 960px; height: 90px; margin: 0px; padding: 0px; border: 0px;"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="report_url" value="/blog/ViewReport.html">
+
+<script type="text/javascript">
+  	//测试字符串的长度 一个汉字算2个字节
+	function mb_strlen(str)
+	{
+		var len=str.length;
+		var totalCount=0;
+		for(var i=0;i<len;i++)
+		{
+			var c = str.charCodeAt(i);
+			if ((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)) {
+				totalCount++;
+			}else{
+				totalCount+=2;
+			}
+		}
+		return totalCount;
+	}
+	/*
+	var Util = {};
+	Util.calWbText = function (text, max){
+		if(max === undefined)
+			max = 500;
+		var cLen=0;
+		var matcher = text.match(/[^\x00-\xff]/g),
+			wlen  = (matcher && matcher.length) || 0;
+		//匹配url链接正则 http://***
+		var pattern = /http:\/\/([\w-]+\.)+[\w-]+(\/*[\w-\.\/\?%&=][^\s^\u4e00-\u9fa5]*)?/gi;
+		//匹配的数据存入数组
+		var arrPt = new Array();
+		var i = 0;
+		while((result = pattern.exec(text)) != null){
+			arrPt[i] = result[0];
+			i++;
+		}
+		//替换掉原文本中的链接
+		for(var j = 0;j<arrPt.length;j++){
+			text = text.replace(arrPt[j],"");
+		}
+		//减掉链接所占的长度
+		return Math.floor((max*2 - text.length - wlen)/2 - 12*i);
+	};
+	*/
+	var allowComment = '0';
+	
+	//举报弹出层
+	function showJuBao(url, cid){
+		
+			$.cover(false);
+			asyncbox.open({
+				id  : 'report_thickbox',
+				url : url,
+				title : '举报违规',
+				width : 378,
+				height : 240,
+				scroll : 'no',
+				data : {
+					'cid'	 : cid,
+					'idtype' : 2 ,
+                                        'blogurl' : window.location.href
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+	}
+
+	$(function(){
+
+		//创建管理员删除的弹出层
+		$('#admin_article_del').click(function(){
+			$.cover(false);
+			asyncbox.open({
+				id : 'class_thickbox',
+				html : '<div class="HT_layer3_1"><ul><li class="HT_li1">操作原因：<select class="HT_sel7" id="del_type" name="del_type"><option value="广告文章">广告文章</option><option value="违规内容">违规内容</option><option value="标题不明">标题不明</option><option value="文不对题">文不对题</option></select></li><li class="HT_li1" ><input class="HT_btn4" id="admin_delete"  type="button" /></li></ul></div>',
+				title : '选择类型',
+				width : 300,
+				height : 150,
+				scroll : 'no',
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});
+		$('#admin_delete').live('click' , function(){
+			///blog/logicdel/id/3480184/url/%252Fblog%252Findex.html.html
+			var type = $('#del_type').val();
+			var url = '/blog/logicdel/id/4419678/url/%252Fuid%252F20522771.html.html';
+			window.location.href= url + '?type=' + type;
+		});
+
+
+		//顶  js中暂未添加&过滤 
+		$('#digg').live('click' , function(){
+
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			var bid = $('#digg').attr('bid');
+			var url = $('#digg').attr('url');
+
+			var digg_str = $.cookie('digg_id');
+			if(digg_str != null)
+			{
+				var arr= new Array(); //定义一数组
+
+				arr = digg_str.split(","); //字符分割     
+				for( i=0 ; i < arr.length ; i++ )   
+				{   
+					if(bid == arr[i])
+					{
+						showErrorMsg('已经赞过该文章', '消息提示'); 
+						return false;
+					}
+				} 
+			}
+			$.ajax({
+				type:"POST",
+				url:url,	
+				data: {
+					'bid' : bid 
+				},
+				dataType: 'json',
+				success:function(msg){
+					if(msg.error == 0)
+					{
+						var num = parseInt($('#digg_num').html(),10);
+						num += 1;
+						$('#digg_num').html(num);
+						$('#digg').die();
+
+						if(digg_str == null)
+						{
+							$.cookie('digg_id', bid, {expires: 30 , path: '/'});
+						}
+						else
+						{
+							$.cookie('digg_id', digg_str + ',' + bid, {expires: 30 , path: '/'});
+						}
+						showSucceedMsg('谢谢' , '消息提示');
+					}
+					else if(msg.error == 1)
+					{
+						//showErrorMsg(msg.error_content , '消息提示'); 
+						showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+					}
+					else if(msg.error == 2)
+					{
+						showErrorMsg(msg.error_content , '消息提示'); 
+					}
+				}
+			});
+		});
+		//举报弹出层
+		/*$('.box_report').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+			var url = $('#report_url').val();
+			var cid = $(this).attr('cid');
+			$.cover(false);
+			asyncbox.open({
+				id  : 'report_thickbox',
+				url : url,
+				title : '举报违规',
+				width : 378,
+				height : 240,
+				scroll : 'no',
+				data : {
+					'cid'	 : cid,
+					'idtype' : 2 
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});*/
+
+
+		//评论相关代码
+		
+		//点击回复显示评论框
+		$('.Blog_a10').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			if(allowComment == 1)
+			{
+				showErrorMsg('该博文不允许评论' , '消息提示'); 
+				return false;
+			}
+			var tid = $(this).attr('toid');//留言作者id
+			var bid = $(this).attr('bid');//blogid
+			var cid = $(this).attr('cid');//留言id
+			var tname = $(this).attr('tname');
+                         			var tpl  = '<div class="Blog_right1_9">';
+				tpl +=	 '<div class="div2">';
+				tpl +=     '<textarea name="" cols="" rows="" class="Blog_ar1_1" id="rmsg">文明上网，理性发言...</textarea>';
+				tpl +=	 '</div>';
+				tpl +=   '<div class="div3">';
+				tpl +=		'<div class="div3_2"><a href="javascript:void(0);" class="Blog_a11" id="quota_sbumit" url="/Comment/PostComment.html" tid="'+tid+'" bid="'+bid+'" cid="'+cid+'" tname="'+tname+'" ></a><a href="javascript:void(0)" id="qx_comment" class="Blog_a12"></a></div>';
+				tpl +=		'<div class="div3_1"><a href="javascript:void(0);" id="mface"><span></span>表情</a></div>';
+				tpl +=		'<div class="clear"></div>';
+				tpl +=	 '</div>';
+				tpl +=  '</div>';
+                                 			$('.z_move_comment').html('');
+			$(this).parents('.Blog_right1_8').find('.z_move_comment').html(tpl).show();
+		});
+		//引用的评论提交
+		$('#quota_sbumit').live('click' , function(){
+
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+
+			var bid   = $(this).attr('bid');
+			var tid   = $(this).attr('tid');//被引用人的id
+			var qid   = $(this).attr('cid');//引用的id
+			var url = $(this).attr('url');
+			var text = $('#rmsg').val();
+			var tname = $(this).attr('tname');
+			if(text == '' || text=='文明上网，理性发言...')
+			{
+				showErrorMsg('评论内容不能为空！' , '消息提示'); 
+				return false;
+			}
+			else
+			{
+				if(mb_strlen(text) > 1000){
+					showErrorMsg('评论内容不能超过500个汉字' , '消息提示'); 
+					return false;
+				}
+			}
+		    $.ajax({
+		        type: "post",
+			    url: url ,
+			    data: {'bid': bid , 'to' : tid , 'qid' : qid , 'text': text , 'tname' : tname },
+				dataType: 'json',
+			    success: function(data){
+				    if(data.code == 1){
+						var tpl =  '<div class="Blog_right1_8">';
+							tpl+=     '<div class="Blog_right_img1"><a href="' +data.info.url+ '" >' + data.info.header + '</a></div>';
+							tpl+=     '<div class="Blog_right_font1">';
+							tpl+=         '<p class="Blog_p5"><span><a href="' +data.info.url+ '" >' + data.info.username + '</a></span>' + data.info.dateline + '</p>';
+							tpl+=         '<p class="Blog_p7"><a href="' + data.info.quota.url + '">' + data.info.quota.username + '</a>：'+ data.info.quota.content + '</p>';
+							tpl+=         '<p class="Blog_p8">' + data.info.content + '</p><span class="span_text1"><a href="javascript:void(0);" class="Blog_a10" toid=' + data.info.fuid + ' bid=' + data.info.bid + ' cid=' + data.info.cid + '  tname = ' + data.info.username + ' >回复</a> | 　<a class="comment_del_mark" style="cursor:pointer" url="' + data.info.delurl + '" >删除</a>　| 　<a href="javascript:showJuBao(\'/blog/ViewReport.html\','+data.info.cid+')" class="box_report" cid="' + data.info.cid + '" >举报</a></span></div>';
+							tpl+=         '<div class="z_move_comment" style="display:none"></div>';
+							tpl+=	      '<div class="Blog_line1"></div></div>';
+							$('#replyList .Blog_right1_8:first').before(tpl);
+							$('.z_move_comment').html('').hide();
+				    }
+					else if(data.code == -1){
+						//showErrorMsg(data.info , '消息提示'); 
+						showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+			        }
+                },
+			    error: function(){//请求出错处理
+                        
+                }
+			});
+		});
+		//底部发表评论
+		$('#submitmsg').click(function(){
+			if(allowComment == 1)
+			{
+				showErrorMsg('该博文不允许评论' , '消息提示'); 
+				return false;
+			}
+			var bid   = $(this).attr('bid');
+			var toid  = $(this).attr('toid');
+			var text = $('#reply').val();
+			var url = $(this).attr('url');
+			if(text == '' || text=='文明上网，理性发言...')
+			{
+				showErrorMsg('评论内容不能为空！' , '消息提示'); 
+				return false;
+			}
+			else
+			{
+				if(mb_strlen(text) > 1000){
+					showErrorMsg('评论内容不能超过500个汉字' , '消息提示'); 
+					return false;
+				}
+			}
+		    $.ajax({
+		        type: "post",
+			    url: url ,
+			    data: {'bid': bid , 'to' : toid ,'text': text},
+				dataType: 'json',
+			    success: function(data){
+				    if(data.code == 1)
+					{
+						var tpl   = '<div class="Blog_right1_8">';
+							tpl  +=   '<div class="Blog_right_img1"><a href="' +data.info.url+ '" >' + data.info.header + '</a></div>';
+							tpl  +=	  '<div class="Blog_right_font1">';
+							tpl  +=       '<p class="Blog_p5"><span><a href="' +data.info.url+ '" >' + data.info.username + '</a></span>' + data.info.dateline + '</p>';
+							tpl  +=       '<p class="Blog_p6">' + data.info.content + '</p>';
+							tpl  +=		  '<div class="div1"><a href="javascript:void(0);" class="Blog_a10"  toid=' + data.info.fuid + ' bid=' + data.info.bid + ' cid=' + data.info.cid + '>回复</a> | 　<a class="comment_del_mark" style="cursor:pointer" url="' + data.info.delurl + '">删除</a>　| 　<a href="javascript:showJuBao(\'/blog/ViewReport.html\','+data.info.cid+')" class="box_report" cid="' + data.info.cid + '">举报</a></div>';
+							tpl  +=		  '<div class="z_move_comment" style="display:none"></div>';
+							tpl  +=    '</div><div class="Blog_line1"></div></div>';
+							$('.Blog_tit3:first').after(tpl);
+							$('#reply').val('文明上网，理性发言...');
+					}
+					else if(data.code == -1)
+					{
+						showErrorMsg(data.info , '消息提示'); 
+			        }
+                },
+			    error: function(){//请求出错处理
+                        
+                }
+		    });
+			
+		});
+		//底部评论重置
+		$('#reset_comment').click(function(){
+			$('#reply').val('文明上网，理性发言...');
+		});
+		//取消回复
+		$('#qx_comment').live('click' , function(){
+			$('.z_move_comment').html('').hide();
+		});
+
+
+		$('#rmsg, #reply').live({
+		    focus:function(){
+			    if($(this).val() == '文明上网，理性发言...'){
+			        $(this).val('');
+			    }
+			},
+			blur:function(){
+		        if($(this).val() == ''){
+			        $(this).val('文明上网，理性发言...');
+			    }
+			}
+		});
+		//删除留言确认
+		$('.comment_del_mark').live('click' , function(){
+			var url = $(this).attr('url');
+			asyncbox.confirm('删除留言','确认', function(action){
+				if(action == 'ok')
+				{
+					location.href = url;
+				}
+			});
+		});
+		//删除时间确认
+		$('.del_article_id').click(function(){
+			var delurl = $(this).attr('delurl');
+			asyncbox.confirm('删除文章','确认', function(action){
+				if(action == 'ok')
+				{
+					location.href = delurl;
+				}
+			});
+		});
+		/*
+		//字数限制
+		$('#rmsg, #reply').live('keyup', function(){
+			var id = $(this).attr('id');
+			var left = Util.calWbText($(this).val(), 500);
+			var eid = '#errmsg';
+			
+			if(id == 'reply') eid =  '#rerrmsg';
+			if (left >= 0)
+		        $(eid).html('您还可以输入<span>' + left + '</span>字');
+		    else
+		        $(eid).html('<font color="red">您已超出<span>' + Math.abs(left) + '</span>字 </font>');
+		});
+		*/
+		//加载表情
+	    $('#face').qqFace({id : 'facebox1', assign : 'reply', path : '/image/qqface/'});
+	    $('#mface').qqFace({id : 'facebox', assign : 'rmsg', path:'/image/qqface/'});
+	    
+		/*
+		$('#class_one_id').change(function(){
+			alert(123213);
+			var id = parseInt($(this).val() , 10);
+			if(id == 0) return false;
+			$('.hidden_son_class span').each(function( index , dom ){
+				if( dom.attr('cid')  == id )
+				{
+				}
+			});
+		});
+		*/
+		//转载文章
+		var turn_url = "/blog/viewClassPart.html";
+		$('#repost_bar').click(function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+			var id = $(this).attr('bid');
+			asyncbox.open({
+				id  : 'turn_class_thickbox',
+				url : turn_url,
+				title : '转载文章',
+				width : 330,
+				height : 131,
+				scroll : 'no',
+				data : {
+					'id'	 : id
+				},
+				callback : function(action){
+					if(action == 'close'){
+						$.cover(false);
+					}
+				}
+			});
+		});
+		/*
+	    //转发文章
+	    $('#repost_bar').live('click' , function(){
+			if(isOnLine == '' )
+			{
+				//showErrorMsg('登录之后才能进行此操作' , '消息提示');
+				showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				return false;
+			}
+	    	var bid  = $(this).attr('bid');
+	    	var url  = $(this).attr('url');
+	    	asyncbox.confirm('转载文章','确认', function(action){
+	    	  if(action == 'ok'){
+	    	    $.ajax({
+				type:"POST",
+				url:url,	
+				data: {
+					'bid' : bid 
+				},
+				dataType: 'json',
+				success:function(msg){
+				  if(msg.error == 0){
+				    showSucceedMsg('转发成功！', '消息提示');
+				  }else if(msg.error == 1){
+				    //location.href = '/index.php?r=site/login';
+					showErrorMsg('操作失败,您需要先登录!', '消息提示', '/site/login.html');
+				  }else{
+				    showErrorMsg(msg.error_content, '消息提示');
+			      }
+				}
+			  });
+	    	  }
+	    	});
+
+		});
+		*/
+
+	});
+</script>
+<!--该部分应该放在输出代码块的后面才起作用 -->
+<script type="text/javascript">
+
+SyntaxHighlighter.autoloader(
+	'applescript			/highlight/scripts/shBrushAppleScript.js',
+	'actionscript3 as3		/highlight/scripts/shBrushAS3.js',
+	'bash shell				/highlight/scripts/shBrushBash.js',
+	'coldfusion cf			/highlight/scripts/shBrushColdFusion.js',
+	'cpp c					/highlight/scripts/shBrushCpp.js',
+	'c# c-sharp csharp		/highlight/scripts/shBrushCSharp.js',
+	'css					/highlight/scripts/shBrushCss.js',
+	'delphi pascal			/highlight/scripts/shBrushDelphi.js',
+	'diff patch pas			/highlight/scripts/shBrushDiff.js',
+	'erl erlang				/highlight/scripts/shBrushErlang.js',
+	'groovy					/highlight/scripts/shBrushGroovy.js',
+	'java					/highlight/scripts/shBrushJava.js',
+	'jfx javafx				/highlight/scripts/shBrushJavaFX.js',
+	'js jscript javascript	/highlight/scripts/shBrushJScript.js',
+	'perl pl				/highlight/scripts/shBrushPerl.js',
+	'php					/highlight/scripts/shBrushPhp.js',
+	'text plain				/highlight/scripts/shBrushPlain.js',
+	'py python				/highlight/scripts/shBrushPython.js',
+	'ruby rails ror rb		/highlight/scripts/shBrushRuby.js',
+	'scala					/highlight/scripts/shBrushScala.js',
+	'sql					/highlight/scripts/shBrushSql.js',
+	'vb vbnet				/highlight/scripts/shBrushVb.js',
+	'xml xhtml xslt html	/highlight/scripts/shBrushXml.js'
+);
+SyntaxHighlighter.all();
+
+
+function code_hide(id){
+	var code = document.getElementById(id).style.display;
+	if(code == 'none'){
+		document.getElementById(id).style.display = 'block';
+	}else{
+		document.getElementById(id).style.display = 'none';
+	}
+}
+</script>
+<!--回顶部js2011.12.30-->
+<script language="javascript">
+ lastScrollY=0;
+ function heartBeat(){
+ var diffY;
+ if (document.documentElement && document.documentElement.scrollTop)
+     diffY = document.documentElement.scrollTop;
+ else if (document.body)
+     diffY = document.body.scrollTop
+ else
+     {/*Netscape stuff*/}
+ percent=.1*(diffY-lastScrollY);
+ if(percent>0)percent=Math.ceil(percent);
+ else percent=Math.floor(percent);
+ document.getElementById("full").style.top=parseInt(document.getElementById("full").style.top)+percent+"px";
+ lastScrollY=lastScrollY+percent;
+ if(lastScrollY<200)
+ {
+ document.getElementById("full").style.display="none";
+ }
+ else
+ {
+ document.getElementById("full").style.display="block";
+ }
+ }
+ var gkuan=document.body.clientWidth;
+ var ks=(gkuan-960)/2-30;
+ suspendcode="<div id=\"full\" style='right:-30px;POSITION:absolute;TOP:500px;z-index:100;width:26px; height:86px;cursor:pointer;'><a href=\"javascript:void(0)\" onclick=\"window.scrollTo(0,0);\"><img src=\"\/image\/top.png\" /></a></div>"
+ document.write(suspendcode);
+ window.setInterval("heartBeat()",1);
+ </script><div id="full" style="right: -30px; position: absolute; top: 5400px; z-index: 100; width: 26px; height: 86px; cursor: pointer; display: block;"><a href="javascript:void(0)" onclick="window.scrollTo(0,0);"><img src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/top.png"></a></div>
+  <!-- footer -->
+  <div class="Blog_footer" style="clear:both">
+    <div><a href="http://www.chinaunix.net/about/index.shtml" target="_blank" rel="nofollow">关于我们</a> | <a href="http://www.it168.com/bottomfile/it168.shtml" target="_blank" rel="nofollow">关于IT168</a> | <a href="http://www.chinaunix.net/about/connect.html" target="_blank" rel="nofollow">联系方式</a> | <a href="http://www.chinaunix.net/about/service.html" target="_blank" rel="nofollow">广告合作</a> | <a href="http://www.it168.com//bottomfile/flgw/fl.htm" target="_blank" rel="nofollow">法律声明</a> | <a href="http://sso.chinaunix.net/Register?return_url=http%3A%2F%2Fblog.chinaunix.net%2F" target="_blank" rel="nofollow">免费注册</a>
+      <p>Copyright  2001-2010 ChinaUnix.net All Rights Reserved 北京皓辰网域网络信息技术有限公司. 版权所有 </p>
+      <div>感谢所有关心和支持过ChinaUnix的朋友们
+        <p>京ICP证041476号 京ICP证060528号</p>
+      </div>
+    </div>
+  </div>
+</div>
+<script language="javascript">
+
+//全局错误提示弹出框
+function showErrorMsg(content, title, url){
+	var url = url || '';
+	var title = title || '消息提示';
+	var html = '';
+	html += '<div class="HT_layer3_1 HT_layer3_2"><ul><li><p><span class="login_span1"></span>' + content + '</p></li>';
+	if(url == '' || url.length == 0){
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2"  onclick=\'close_windows("error_msg")\'></li>';	
+	} else {
+		html += '<li class="HT_li1"><input type="button" class="login_btn1" onclick="location.href=\'' + url + '\'"></li>';
+	}
+	html += '</ul></div>';
+	$.cover(true);
+	   asyncbox.open({
+		 id: 'error_msg',
+		 title : title,
+		 html : html,
+		 'callback' : function(action){
+			 if(action == 'close'){
+				 $.cover(false);
+			 }
+		 }
+	});
+}
+
+//全局正确提示
+function showSucceedMsg(content, title , url ){
+	var url = url || '';
+	var title = title || '消息提示';
+	var html = '';
+	html += '<div class="HT_layer3_1 HT_layer3_2"><ul><li><p><span class="login_span2"></span>' + content + '</p></li>';
+	if(url == '' || url.length == 0){
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2"  onclick=\'close_windows("error_msg")\'></li>';	
+	} else {
+		html += '<li class="HT_li1"><input type="button" class="HT_btn2" onclick="location.href=\'' + url + '\'"></li>';
+	}
+	html += '</ul></div>';
+	$.cover(true);
+	asyncbox.open({
+		 id: 'error_msg',
+		 title : title,
+		 html : html,
+		 'callback' : function(action){
+			 if(action == 'close'){
+				 $.cover(false);
+			 }
+		 }
+	});
+}
+
+//关闭指定id的窗口
+function close_windows(id){
+	$.cover(false);
+	$.close(id);
+}
+
+
+//公告
+var tID;
+var tn;                        // 高度
+var nStopTime = 5000;        // 不同行间滚动时间隔的时间，值越小，移动越快
+var nSpeed = 50;            // 滚动时，向上移动一像素间隔的时间，值越小，移动越快
+var isMove = true;
+var nHeight = 25;
+var nS = 0;
+var nNewsCount = 3;
+
+/**
+ * n 用于表示是否为第一次运行
+ **/
+function moveT(n)
+{
+    clearTimeout(tID)
+    var noticev2 = document.getElementById("noticev2")
+    nS = nSpeed;
+    
+    // 只在第一次调用时运行，初始化环境（有没有参数）
+    if (n)
+    {
+        // 设置行高
+        noticev2.style.lineHeight = nHeight + "px";
+        // 初始化显示位置
+        tn = 0;
+        // 刚进入时在第一行停止时间
+        nS = nStopTime;
+    }
+    
+    // 判断鼠标是否指向层
+    if (isMove)
+    {
+        // 向上移动一像素
+        tn--;
+        // 如果移动到最下面一行了，则移到顶行
+        if (Math.abs(tn) == nNewsCount * nHeight)
+        {
+            tn = 0;
+        }
+        // 设置位置
+        noticev2.style.marginTop = tn + "px";
+        // 完整显示一行时，停止一段时间
+        if (tn % nHeight == 0)
+        {
+            nS = nStopTime;
+        }
+    }
+
+    tID = setTimeout("moveT()", nS);
+}
+moveT(1);    // 此处可以传入任何参数
+</script>
+<script language="javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/pv.js.下载"></script>
+<script>
+function sendPV(){
+    var pvTrack = new PvTrack();
+    pvTrack.type = 35; // 频道类别ID
+    pvTrack.channel = 189; // 频道ID
+    pvTrack.pageType = 0;
+    pvTrack.track();
+}
+window.setTimeout("sendPV()", 1000);
+</script>
+<script type="text/javascript">
+//  var _gaq = _gaq || [];
+//  _gaq.push(['_setAccount', 'UA-20237423-2']);
+//  _gaq.push(['_setDomainName', '.chinaunix.net']);
+//  _gaq.push(['_trackPageview']);
+//
+//  (function() {
+//    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+//    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+//    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+//  })();
+
+</script>
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3F0ee5e8cdc4d43389b3d1bfd76e83216b' type='text/javascript'%3E%3C/script%3E"));
+
+function linkto(){
+    setCookie("returnUrl", location.href, 1521205387, "/");
+}
+function linktoOut(){
+    setCookie("returnOutUrl", location.href, 1521205387, "/");
+}
+//JS写COOKIE
+function setCookie(name, value, expires, path, domain){
+	if(!arguments[2]) expires = 3600 * 24;
+	if(!arguments[3]) path = "";
+	if(!arguments[4]) domain = "";
+	var str=name+"="+escape(value);
+	if(expires!=""){
+		var date=new Date();
+		date.setTime(date.getTime()+expires*1000);
+		str+=";expires="+date.toGMTString();
+	}
+	if(path!=""){
+		str+=";path="+path;//指定可访问cookie的目录
+	}
+	if(domain!=""){
+		str+=";domain="+domain;//指定可访问cookie的域
+	}
+	document.cookie = str;
+}
+
+</script><script src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/h.js.下载" type="text/javascript"></script>
+<script type="text/javascript" src="./走马观花： Linux 系统调用 open 七日游（二）-qh997-ChinaUnix博客_files/jquery.qqFace.js.下载"></script>
+
+
+<div id="asyncbox_cover" unselectable="on" style="opacity:0.1;filter:alpha(opacity=10);background:#000"></div><div id="asyncbox_clone"></div><div id="asyncbox_focus"></div><div id="asyncbox_load"><div><span></span></div></div></body></html>

@@ -1,0 +1,94 @@
+(function() {
+        'use strict'
+        var comment = function(options) {
+            var _this = this
+
+            this.default = {}
+
+            this.options = $.extend(this.default, options)
+
+            this.init = function() {
+                _this.bind()
+            }
+
+            this.bind = function() {
+                $('.m2-comment-list .new-comment textarea').focus(function() {
+                        _this.showBtn($(this))
+                    })
+                    // $('.m2-comment-list .item .reply').click(function () {
+                    //     _this.showComment($(this))
+                    // })
+                for (var i = 0, len = $('.m2-comment-list .item').length; i < len; i++) {
+                    var parent = $('.m2-comment-list .item').eq(i)
+                    parent.find('.reply').click(function() {
+                        _this.showComment($(this), $(this).parents('.item'))
+                    })
+                }
+
+                $('.m2-comment-list .line-warp').click(function() {
+                    _this.subComment($(this), $(this).parents('.sub-comment-list'))
+                })
+            }
+            this.showBtn = function(dom) {
+                dom.siblings('.write-function-block').addClass('show')
+                setTimeout(function() {
+                    dom.siblings('.write-function-block').addClass('animate')
+                }, 30)
+            }
+            this.showComment = function(dom, parent) {
+                var domComment = parent.find('.sub-comment-list .new-comment')
+                if (!parent.attr('iscomment')) {
+                    domComment.addClass('show')
+                    parent.find('.reply').removeClass('check')
+                    dom.addClass('check')
+                    var name = dom.parents('.sub-comment').find('.name').text()
+                    console.log(name)
+                    if (name) {
+                        domComment.find('textarea').val('@' + name).focus()
+                    } else {
+                        domComment.find('textarea').val('').focus()
+                    }
+                    setTimeout(function() {
+                        domComment.addClass('animate')
+                    }, 30);
+                } else {
+                    if (!dom.hasClass('check')) {
+                        parent.find('.reply').removeClass('check')
+                        dom.addClass('check')
+                        var name = dom.parents('.sub-comment').find('.name').text()
+                        if (name) {
+                            domComment.find('textarea').val('@' + name).focus()
+                        } else {
+                            domComment.find('textarea').val('').focus()
+                        }
+                        return
+                    }
+                    domComment.removeClass('animate')
+                    setTimeout(function() {
+                        domComment.removeClass('show')
+                    }, 300)
+                }
+                if (parent.attr('iscomment')) {
+                    parent.removeAttr('iscomment')
+                } else {
+                    parent.attr('iscomment', true)
+                }
+            }
+            this.subComment = function(dom, parent) {
+                if (parent.hasClass('check')) {
+                    parent.removeClass('check')
+                    dom.find('a').text('展开')
+                } else {
+                    parent.addClass('check')
+                    dom.find('a').text('收起')
+                }
+            }
+            this.init()
+        }
+
+        window.Comment = comment
+
+        $(function() {
+            var comment = new Comment()
+        })
+    })();

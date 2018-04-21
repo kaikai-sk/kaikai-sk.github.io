@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<!-- saved from url=(0041)http://www.bijishequ.com/detail/564817?p= -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新</title>
+    <meta keywords="log,NOVA,inode,page,更新">
+    <meta discripstion="前言 前段时间有幸跟 NOVA 的作者 Jian Xu 博士深入交流了一番，受益颇多，决定趁热打铁，好好研究一下 NOVA，一方面可以知道在 Linux 下面如何开发一个文件...">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/base.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/homepage.css">
+    <link rel="stylesheet" href="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/bootstrap.min.css">
+    <link rel="stylesheet" href="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/listfortheme.css">
+	<script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/hm.js.下载"></script><script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/jQuery.js.下载"></script>
+	
+	<script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/jquery.validate.min.js.下载"></script>
+	
+	<script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/bootstrap.min.js.下载"></script>
+	<script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/commet.js.下载"></script>
+<script src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/share.js.下载"></script><link rel="stylesheet" href="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/share_style1_16.css"></head>
+<body>
+
+ <div class="col-md-12 column">
+<div class="navbar" style="padding-top:4px;" role="navigation">
+  <div class="navbar-header">
+  		<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#example-navbar-collapse">
+			<span class="sr-only">切换导航</span>
+			<span class="icon-bar" style="background-color:#333"></span>
+			<span class="icon-bar" style="background-color:#333"></span>
+			<span class="icon-bar" style="background-color:#333"></span>
+		</button>
+    <a href="http://www.bijishequ.com/" class="navbar-brand" target="_blank" style="background: url(/images/logo.png) no-repeat 0 0;padding-left:42px;"></a>
+  </div>
+  <div class="collapse navbar-collapse" id="example-navbar-collapse">
+  <ul class="nav navbar-nav">
+    <li>
+<a class="text-info" href="http://www.bijishequ.com/">首页</a>
+</li>
+<li>
+<a class="text-info" href="http://www.bijishequ.com/themeList">专题</a>
+</li>
+<li>
+<a class="text-info" href="http://www.bijishequ.com/original/blogIndex">博客</a>
+</li>
+<li>
+<a class="text-info" href="http://www.bijishequ.com/comment/list">评论</a>
+</li>
+  </ul>
+  <ul class="nav navbar-nav navbar-right">
+					<li><a class="text-info" href="http://www.bijishequ.com/login.html"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li>
+			<li><a class="text-info" href="http://www.bijishequ.com/register.html"><span class="glyphicon glyphicon-user"></span> 注册</a></li>
+</ul>
+</div>
+</div>        </div>
+
+	<div class="container">
+					<div class="row">
+			<div class="col-md-12 leaderboard">
+			<h2><small>www.bijishequ.com</small></h2>
+			<form class="search-form" accept-charset="UTF-8" method="get" action="http://www.bijishequ.com/info/search.html">
+			<div class="input-group input-group-lg">
+			<input name="searchText" id="searchText" placeholder="搜索你想要的内容" class="form-control" autofocus="autofocus" type="text">
+			<span class="input-group-btn">
+			<button class="btn btn-primary" name="searchText" value="" type="submit">搜索</button>
+			</span>
+			</div>
+			<h1></h1>
+			<p class="hidden-xs">笔记社区共收录<strong>563,340篇</strong>文章，由网站知识贡献者分类总结出<strong> 411个 </strong>技术专题。<a href="http://www.bijishequ.com/creat.html">创建自己的专题&gt;</a>
+			</p>
+			<hr>
+			</form> </div>
+			</div>
+
+	<div class="container">
+	<div class="row clearfix">
+<!-- 		<div class="col-md-2 column">
+		</div> -->
+		<div class="col-md-8 column" style="word-break: break-all;">
+		<p class="visible-xs">关注社区微信公众号: PMvideo</p>
+			<h2 style="word-break: break-all;">
+				NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统
+			</h2>
+			<p>
+				  作者：<a href="http://www.bijishequ.com/authorarticle.html?author="> </a>
+				  <span style="padding-left:8px">2017-11-26</span> 
+				  <a href="http://www.bijishequ.com/select.html?articleId=564817" class="text-info" target="_blank" style="color:#337ab7;">
+				  <span class="glyphicon glyphicon-star-empty" style="padding-left:8px"></span>
+				  <span style="padding-left:2px;">收录到我的专题</span></a>
+			</p>
+			<p>
+			标签 
+			 <a href="http://www.bijishequ.com/info/search.html?searchText=log" style="color:#337ab7;">
+			 <span style="padding:5px;margin:5px;">log</span></a>
+			 <a href="http://www.bijishequ.com/info/search.html?searchText=NOVA" style="color:#337ab7;">
+			 <span style="padding:5px;margin:5px;">NOVA</span></a>
+			 <a href="http://www.bijishequ.com/info/search.html?searchText=inode" style="color:#337ab7;">
+			 <span style="padding:5px;margin:5px;">inode</span></a>
+			 <a href="http://www.bijishequ.com/info/search.html?searchText=page" style="color:#337ab7;">
+			 <span style="padding:5px;margin:5px;">page</span></a>
+			 <a href="http://www.bijishequ.com/info/search.html?searchText=%E6%9B%B4%E6%96%B0" style="color:#337ab7;">
+			 <span style="padding:5px;margin:5px;">更新</span></a>
+			 </p>
+			 
+<!--     大炮这段是分享代码 -->
+<div class="bdsharebuttonbox bdshare-button-style1-16" data-bd-bind="1512560717976"><a class="bds_more" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="more"></a><a class="bds_weixin" title="分享到微信" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="weixin"></a><a class="bds_qzone" title="分享到QQ空间" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="qzone"></a><a class="bds_evernotecn" title="分享到印象笔记" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="evernotecn"></a><a class="bds_youdao" title="分享到有道云笔记" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="youdao"></a><a class="bds_linkedin" title="分享到linkedin" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="linkedin"></a><a class="bds_fbook" title="分享到Facebook" href="http://www.bijishequ.com/detail/564817?p=#" data-cmd="fbook"></a></div>
+<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":["qzone","tsina","bdysc","weixin","sqq","huaban","youdao","mail","fbook","twi","linkedin","evernotecn"],"bdPic":"","bdStyle":"1","bdSize":"16"},"share":{},"image":{"viewList":["weixin","qzone","evernotecn","youdao","linkedin","fbook"],"viewText":"分享到：","viewSize":"16"}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>			<br><br>
+			<h2>前言</h2> 
+<p>前段时间有幸跟 NOVA 的作者 Jian Xu 博士深入交流了一番，受益颇多，决定趁热打铁，好好研究一下 NOVA，一方面可以知道在 Linux 下面如何开发一个文件系统，而另一方面，则是想了解下当前硬件的发展水平，以及为了更好的发回硬件性能，我们需要做什么，算是对未来做一些技术调研和储备工作。</p> 
+<p>NOVA 是一个支持混合 Volatile/Non-volatile main memories 的文件系统，volatile main memory 其实 我们很容易理解，就是我们通常说的 DRAM。而 Non-volatile main memory （NVM） 则可以认为是跟 DRAM 有一样的性能（可能还是稍微比 DRAM 慢一点），但能进行数据持久化的技术，譬如我司现在就有十块基于 NVM 技术的 3D XPoint 盘，如果有同学对这块感兴趣，想尝试下为最近硬件设计程序，欢迎联系我。</p> 
+<p>NVM 预计很快就会跟 DRAM 一样，出现在处理器内存总线上面，所以融合 DRAM 和 NVMM 的特性，设计出一套更好的存储系统，我认为是有必要的。现阶段，传统的文件系统，譬如 XFS，ext4 并不能和好的工作于这种混存架构上面，所以徐博士他们就设计了一个 Non-Volatile memory Accelerated (NOVA) 的文件系统。</p> 
+<p>这里，再说一点小插曲，我开始以为 NVMM 和 NVMe 是一样的东西，于是问了徐博士这个问题，结果他告诉我两个是不一样的，真的是差之毫厘谬以千里，看来我在硬件上面的知识积累不足，后面需要多跟徐博士他们这些牛人请教。</p> 
+<h2>NVMM</h2> 
+<p>在开始讨论 NOVA 之前，我们可以先说说 NVMM，NVMM 这种新的硬件体系给文件系统的设计带来了新的挑战，主要有几个方面：</p> 
+<ul> 
+ <li>性能：NVMM 的性能非常的好，延迟非常的低。NVMM 甚至提供了 Direct Access (DAX) 或者其他方式来直接操作数据，不需要将数据拷贝到 DRAM 上面。之前的存储系统，会认为延迟的主要开销在于硬件，但现在，很可能主要开销会出现在软件层面上面。</li> 
+ <li>写入重排：现代的处理器和它们的缓存可能会为了性能将存储指令重新排列。而对于 DRAM 来说，CPU 是能够保证一致性的，但对于 NVMM 却没有这样的保证。虽然我们可以强制 flush 缓存以及是所有内存屏障来保证写入顺序，但 <code>clflush</code> 会极大的降低性能，而 <code>mfence</code> 并不能保证写回到 NVMM 的顺序。幸运的是，Intel 已经开发了新的指令集 <code>clfushopt</code>， <code>clwb</code>，<code>PCOMMIT</code>，而 NOVA 就是基于这些新的指令集的。（跟徐博士聊天顺带问了下 AMD 是否也有了类似的指令集，他回答『不确定，不过应该是有了』）。</li> 
+ <li>原子性：POSIX 类型的文件系统在很多操作上面都需要保证原子性，譬如 rename 这些，但这些操作很多会涉及到多个数据的修改，譬如 append file 这种的既要更改文件数据，也需要更改文件元信息，而 NVMM 只能提供 64 bits 的原子性保证，这对于原子性的设计是一个很大的挑战。</li> 
+</ul> 
+<p>通常文件系统实现原子性有几种方式：</p> 
+<ul> 
+ <li>Journaling：这个应该算是最常见的做法了，不光是传统的文件系统还有很多数据库，很多都采用的是这种做法。任何更新操作先写到 log，然后在写到实际的位置，当然这种写两份的策略并不高效，所以也有很多的优化方法，譬如只在 journaling 上面更新 metadata。</li> 
+ <li>Shadow paging：还有一些文件系统使用的是 Copy-On-Write 机制，对于更新操作不是直接写到之前的 page 上面，而是先写到另一个 page 上面，在将这个新的 page 加入到文件系统的 tree 里面，这里就需要涉及到对 tree 上面的 node 的更新，而有时候，我们需要将新 page 到 root 的所有 node 都更新一遍，这个开销还是挺大的。</li> 
+ <li>Log-structuring：虽然结构化日志很早就有，但我第一次被震撼到还是遇到了 LevelDB 的时候，它通过这种方式将随机写变成了文件的顺序追加。对于文件系统来说，其实也是一样的原理，但这些文件系统为了保证顺序追加，可能需要连续的可用存储空间，同时也需要定期的去清理过期的数据，释放空间，这些都可能造成开销。</li> 
+</ul> 
+<h2>设计</h2> 
+<p>现阶段，基于 NVMM 的文件系统已经有不少了，譬如 Ext4-DAX（感觉原生的 Ext4 应该是不适用与 NVMM 的），它采用的是 Journaling 的方式，但只保证 metadata 的更新原子性，并没有保证数据的。</p> 
+<p>而 NOVA 是一个使用 log-structuring 的文件系统，但为了更好的利用 NVMM，NOVA 并没有直接使用传统的 log-structuring 的方式，而且做了改进。徐博士他们在做 NOVA 的时候，发现几个现象：</p> 
+<ol> 
+ <li>支持原子更新的 log 很容易实现，但要高效的查出相关的操作其实并不容易。而要在 NVMM 里面实现一个支持高效搜索的数据结构，也是比较困难的。</li> 
+ <li>传统的 log-structuring 文件系统连续的存储空间，但这个对于 NVMM 来说没有这个必要，因为它的随机访问速度太快了。</li> 
+ <li>传统的 log-structuring 会采用单一 log 的方式，虽然会影响并发性能，但考虑到 disk 仍然是性能主要瓶颈，其实也无所谓。但在 NVMM 上面，快速，高并发的随机存取操作是完全没问题了，所以我们可以使用多个 log。</li> 
+</ol> 
+<p>观察到以上现象之后，NOVA 就做了如下设计：</p> 
+<ol> 
+ <li>将 Log 保存在 NVMM 里面，而索引则保存在 DRAM。索引使用的是 radix tree 来实现的，这个我问过徐博士，为啥选择这个数据结果，给我的答复是 kernel 里面就没几个数据结构，他们又不想自己写，就拿了一个现成可用的。</li> 
+ <li>每一个 inode 有一个 log。这个就是充分利用 NVMM 的随机存取高效的特性了，而且每个 inode 一个 log，不会存在并发的问题。</li> 
+ <li>使用 logging 和轻量级的 journaling 来进行复杂的原子更新。譬如一个文件从一个目录 move 到另一个目录，这设计到多个 inode 的修改，NOVA 会首先将操作记录到 inode 的 log 上面，然后在 journal 上面记录对应的 log tail 的改动，最后在将 log tail 更新。NOVA 的 journaling 只会记录 log tail，并且任何 POSIX 的文件操作涉及到的 inode 不会超过 4 个，所以 journaling 是非常轻量的。这里，我同时问了徐博士，这已经涉及到了几个 inode，如何保证并发，他回答道 Linux VFS 其实已经保证了，所以他们不需要做。</li> 
+ <li>使用链表的方式实现了 log，NOVA 使用的是 4 KB 的 page，并且在每个 page 的最后面会有一个指向下个 page 的指针。这种方式不需要分配大量的连续存储空间，同时对于 log 的清理也比较友好，回收过期的 page 只需要一些指针的操作。</li> 
+ <li>不记录 file data。Inode 里面只记录了 file metadata，没有记录 file data。NOVA 使用了 COW 的机制更新 file data，然后在将 metadata 追加到 log 上面。</li> 
+</ol> 
+<h2>架构</h2> 
+<div class="image-package"> 
+ <div class="image-container" style="max-width: 700px; max-height: 409px;"> 
+  <div class="image-container-fill" style="padding-bottom: 58.540000000000006%;"></div> 
+  <div class="image-view" data-width="1804" data-height="1056">
+   <img data-original-src="//upload-images.jianshu.io/upload_images/2224-9f5940f5acf8d736.png" data-original-width="1804" data-original-height="1056" data-original-format="image/png" data-original-filesize="201032" data-bd-imgshare-binded="1">
+  </div> 
+ </div> 
+ <div class="image-caption">
+  DraggedImage.png
+ </div> 
+</div> 
+<p>上图是 NOVA 的整体架构，NOVA 将 NVMM 分成了四块，superblock 和 recovery inode，inode tables， journals，最后就是 log / data pages。Superblock 包含了全局的文件系统信息，而 recovery inode 则存放了用于下一次启动加速 NOVA remount 的恢复信息，inode tables 则包含 inodes，而 journals 则是为目录操作提供了原子支持，剩下的就是实际的 log 和 data 的 pages。</p> 
+<p>NOVA 为每个 CPU 设置了自己的 inode table，journal，page list，这样就能避免不同的 CPU 之间的 lock 问题。这个优化其实在 RocksDB 的 statistics 上面也有体现，它也使用了 per-CPU 模型，每个 CPU 负责自己的统计信息。</p> 
+<h3>Inode Table</h3> 
+<p>NOVA 首先会 为每一个 inode table 初始化一个 2 MB 的 inodes array，每一个 inode 都是 128 byte 字节，所以给定一个 inode number，NOVA 会很容易就定位到对应的 inode。</p> 
+<p>对于新增的 inode，NOVA 会使用 round-robin 算法，依次添加到各个 inode table 上面，保证整个 inodes 的均匀分布。如果一个 inode table 满了，NOVA 会再分配一个 2 MB 的 sub-table，并用链表串联起来。为了减少 inode table 的大小，每个 inode 上面有一个 bit 来表示是否 invalid，NOVA 就能重用这些 inode 给新的文件或者目录了。</p> 
+<p>一个 inode 包含指向 log 的 head 和 tail 指针，log 是一个由 4 KB page 串联的链表，tail 一直指向的是最后一个提交的 log entry，当系统第一次访问 NOVA 的时候，NOVA 会通过遍历 head 到 tail 的所有 log 去重建 DRAM 里面的数据结构。</p> 
+<h3>Journal</h3> 
+<p>NOVA 的 journal 是一个 4 KB 的环形 buffer，使用一对 <code>&lt;enqueue, dequeue&gt;</code> 指针来操作这个 buffer。Journal 主要是为了保证操作多个 inode 的原子性，首先 NOVA 会将更新追加到 inode 的各自 log 上面，然后开启一个事务，将涉及到的 log tail 写入当前 CPU 的 journal enqueue，并且更新 enqueue 指针，当 各个 inode 完成了自己的更新，NOVA 就更新 dequeue 指针到 enqueue，完成事务的提交。</p> 
+<h2>空间管理</h2> 
+<p>NOVA 将 NVMM 给每个 CPU 分了一个 pool，然后将空闲的 page list 保存在了 DRAM 里面。如果当前 CPU pool 里面没有可用的 page，就从最大的 pool 里面拿。NOVA 使用 red-black tree 按照 address 来存放空闲的 pages，正常关机下面，NOVA 会将分配好的 page 状态保存到 recovery inode 的 log 里面，但如果是非正常关机，则会遍历所有 inode 的 log 并重建。</p> 
+<p>最开始，一个 inode 的 log 只有一个 page，当需要更多 page 的时候，NOVA 直接使用 x 2 的方式，但如果 log 的长度超过了一定阈值，就每次只新分配固定数量的 pages 了。</p> 
+<h2>实现</h2> 
+<p>前面简单的介绍了一些 NOVA 的架构以及基本的数据结构，下面介绍下一些常用功能的大概实现。</p> 
+<h3>目录操作</h3> 
+<p>NOVA 的目录包括两块，一个是保存到 NVMM 里面的 inode log，另一个则是放到 DRAM 里面的 radix tree。目录的 log 包括 directory entires （也就是通常的 dentry） 和 inode update entires。Dentry 包括目录名，子目录，子文件，inode 个数，还有 timestamp 这些信息。对于改目录下面的文件操作，譬如 create，delete，rename 这些，NOVA 都会在 log 里面追加一个 dentry。 对于 delete 操作来说，NOVA 会将 dentry 的 inode number 设置为 0，用以跟 create 区分。</p> 
+<p>为了加快 dentry 的查询速度，NOVA 在 DRAM 里面维护了一个 radix tree，key 就是 dentry 的名字，而 tree 的子节点则指向 log 中对应的 dentry。</p> 
+<div class="image-package"> 
+ <div class="image-container" style="max-width: 700px; max-height: 394px;"> 
+  <div class="image-container-fill" style="padding-bottom: 56.38999999999999%;"></div> 
+  <div class="image-view" data-width="1660" data-height="936">
+   <img data-original-src="//upload-images.jianshu.io/upload_images/2224-64b5425892d37f97.png" data-original-width="1660" data-original-height="936" data-original-format="image/png" data-original-filesize="188734" data-bd-imgshare-binded="1">
+  </div> 
+ </div> 
+ <div class="image-caption">
+  DraggedImage-1.png
+ </div> 
+</div> 
+<p>上面是一个 create 的例子，我们要创建一个 zoo 的目录，会有如下几个操作：</p> 
+<ol> 
+ <li>在 inode table 里面为 zoo 选择并初始化一个未使用的 inode</li> 
+ <li>将 zoo 的 dentry 添加到目录的 log 里面</li> 
+ <li>使用当前 CPU journal 更新 dir 目录的 log tail 和给新的 inode 设置一个 valid 位。</li> 
+ <li>将 zoo 添加到 radix tee 上面。</li> 
+</ol> 
+<h3>文件操作</h3> 
+<p>NOVA 的文件 log 包含两种，一个是 inode update entries，另一个 write entries，write entry 里面会描述 write operation 以及指向实际的 data page。如果一次写入太大，NOVA 会使用多个 write entries，并将它们全部追加到 log 后面，然后最后更新 log tail。</p> 
+<div class="image-package"> 
+ <div class="image-container" style="max-width: 700px; max-height: 463px;"> 
+  <div class="image-container-fill" style="padding-bottom: 66.19%;"></div> 
+  <div class="image-view" data-width="1822" data-height="1206">
+   <img data-original-src="//upload-images.jianshu.io/upload_images/2224-97c63210947c08da.png" data-original-width="1822" data-original-height="1206" data-original-format="image/png" data-original-filesize="292401" data-bd-imgshare-binded="1">
+  </div> 
+ </div> 
+ <div class="image-caption">
+  DraggedImage-2.png
+ </div> 
+</div> 
+<p>上面是一个文件写入例子，上面的 <code>&lt;0, 1&gt;</code> 这种的表示 <code>&lt;filepageoff, num pages&gt;</code>，也就是 page 的 offset 和有多少个 page。譬如 <code>&lt;0, 1&gt;</code> 就表示这个 page 的 offset 是 0， 有一个 page，也就是 4 KB。当我们要进行一次 <code>&lt;2, 2&gt;</code> 写入（也就是在 offset 为 2 的地方重新写入 2 pages），流程如下：</p> 
+<ol> 
+ <li>使用 COW 技术将数据写入到 data page 上面</li> 
+ <li>将 <code>&lt;2, 2&gt;</code> 追加到 inode log 上面</li> 
+ <li>原子更新 log tail，提交这次写入</li> 
+ <li>更新 DRAM 里面的 radix tree，这样 offset 2 就指向了新的 page</li> 
+ <li>将之前旧的两个 page 放到 free list 里面</li> 
+</ol> 
+<p>上面需要注意，虽然我们更新 log tail 是原子的，但并没有保证原子更新 log tail 和 radix tree，这里跟徐博士讨论的时候他说到，使用了一个 read-write lock，其实他觉得并不高效，后面考虑优化。</p> 
+<h3>Atomic mmap</h3> 
+<p>我们可以使用 DAX-mmap 技术将 NVMM 的数据直接映射到用户空间，采用这种方式，我们能直接绕过文件系统的 page cache，虽然能降低开销，但对于程序员来说还是有很大的挑战，上面说了，NVMM 只有 64 位的原子操作支持，而且一些 fence 和 flush 指令还需要依赖处理器，所以先基于这些初级的机制构造健壮的 non-volatile 的数据结构，其实是非常困难的。</p> 
+<p>为了解决这个问题，NOVA 使用了一种 atomic-mmap 的机制，它其实是使用了一个 replica pages，然后将实际修改的数据放到了 replica pages 上面，当用户调用了 msync 操作，NOVA 就会将相关的修改当做一次 write 操作处理，它会使用 movntq 指令将 replica pages 的数据拷贝到 data pages，然后在原子性的提交。</p> 
+<p>虽然采用这种方式能保证数据强一致，但并没有 DAX-mmap 高效。而对于通常 DRAM 的 mmap，NOVA 现在并不支持，未来可能有计划。</p> 
+<h3>GC</h3> 
+<p>NOVA 将文件的 metadata 和实际 data 不同存放，这样对于 GC 来说其实是很高效的。对于 data 来说，只要 write 操作产生了 stale data pages（就譬如我们前面说的那个例子），NOVA 就直接对 data pages 进行回收。</p> 
+<p>但回收 inode logs 就比较复杂了。我们需要确认一个 log entry 是 dead 的，首先这个 entry 不能是 log 的最后一个 entry，并且需要满足以下任意一个条件，就可以认为是 dead 了：</p> 
+<ol> 
+ <li>对于 file write entry ，没有指向任何 valid 的 data page</li> 
+ <li>对于包含更新 inode metadata 的 entry，后面有一个新的更新同样 metadata 的 entry</li> 
+ <li>对于一个包含 dentry update 的 entry，已经被标记为 invalid</li> 
+</ol> 
+<p>NOVA 使用两种 GC 方式，Fast GC 和 Thorough GC。</p> 
+<div class="image-package"> 
+ <div class="image-container" style="max-width: 700px; max-height: 423px;"> 
+  <div class="image-container-fill" style="padding-bottom: 60.440000000000005%;"></div> 
+  <div class="image-view" data-width="1744" data-height="1054">
+   <img data-original-src="//upload-images.jianshu.io/upload_images/2224-61fbad369b959dba.png" data-original-width="1744" data-original-height="1054" data-original-format="image/png" data-original-filesize="253542" data-bd-imgshare-binded="1">
+  </div> 
+ </div> 
+ <div class="image-caption">
+  DraggedImage-3.png
+ </div> 
+</div> 
+<p>当 NOVA 发现一个 log page 里面所有的 entries 都是 dead，那么就可以直接回收这个 page，这个仅仅需要更新 page 的指针就可以了。譬如上面流程 a 就是 Fast GC 的例子，2 这个 page 只有 dead entries 了，我们只需要将 page 1 的 next pointer 指针指向 page 3 就可以了。</p> 
+<p>如果一个 log page 里面 live entries 的数量小于一半了，NOVA 就会开始进行 Thorough GC，就是将 live entries 拷贝到另一个新的 log 上面，指向新的 log，并且回收旧的 log。上面的流程 b 就是 Through GC 的例子，NOVA 将 page 1 和 3 的 entries 拷贝到 page 5 上面，然后链接 page 5 和 page 4，并且回收 page 1 和 3。这里 NOVA 并没有处理 page 4 的 live entries，这样就用原子更新 log head，从而避免同时更新 log head 和 tail，这个没法保证原子性。</p> 
+<h3>Recovery</h3> 
+<p>当系统关闭并重新启动之后，NOVA 就会重现去 mount，它使用了一种延迟重建的机制，也就是只有第一次访问的时候才会去重建 radix tree 这些。对于正常关机来说，因为 NOVA 会将所有的 page 分配状态都保存到 recovery inode log 里面，所以 remount 的时候只需要从 recovery inode log 恢复就可以了。</p> 
+<p>但对于异常关机（譬如掉电）来说，NOVA 就必须重建 page 分配状态，NOVA 就需要遍历所有的 inode logs 了。但这个速度也是很快的，因为首先能每个 CPU 并发去恢复，另外，因为 log 里面不包含 data，所以 log 比较短，恢复速度自然就很快。在恢复的时候，NOVA 需要处理：</p> 
+<ol> 
+ <li>检查 journal，并且回滚所有没有提交的事务</li> 
+ <li>每个 CPU 开启一个 recovery 线程去并发的访问 inode tables，为每个 valid 的 inode 扫描 log。对于目录 inode 来说，NOVA 只需要遍历它覆盖的 pages，并不需要读取 log 的内容。而对于文件 inode，NOVA 则需要读取 write entries 并遍历所有的 data pages。</li> 
+</ol> 
+<h2>小结</h2> 
+<p>NOVA 的源码在 <a href="https://link.jianshu.com/?t=https://github.com/NVSL/linux-nova" target="_blank" rel="nofollow">GitHub</a> ，大家如果感兴趣，可以去学习一下，毕竟对于如何在新硬件体系上面做一个文件系统这种事情，还是非常酷的。这篇文章也算是我对 NOVA 的一些探究，里面如果有不对的地方，如果徐博士看到了，麻烦指正出来。</p> 
+<p>对于新硬件体系的研究，以及如何基于这些硬件体系更好的设计数据库的存储引擎，是我们未来重点会跟进的一个方向，欢迎各位对这方面感兴趣的同学加入我们 PingCAP，你可以直接给我发邮件 <a href="https://link.jianshu.com/?t=mailto:tl@pingcap.com" target="_blank" rel="nofollow">tl@pingcap.com</a>。毕竟从头开始打造一个未来的存储引擎，我觉得是一件非常有意思，有挑战的事情。</p>
+<br><br>
+<!--     大炮这段代码开始是评论 -->
+ <div class="m2-comment-list">
+ 
+     <div class="new-comment main-comment">
+	<form>
+	<a href="javascript:;" class="avatar">
+	<img src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/logout-info.png" data-bd-imgshare-binded="1">
+	</a>
+	<div class="nologin show">
+		<a class="mbtn sign loginButton" href="http://www.bijishequ.com/login.html?redirectUrl=%2Fdetail%2F564817">登录</a>
+		<span>后发表评论</span>
+	</div>
+	</form>
+</div>
+        
+        <h4>0条评论或问题</h4>
+        <div class="normal-comment-list">
+        
+            
+            
+        </div>
+    </div>
+    
+    <!--     大炮这段代码结束是评论 -->
+<script>
+function validateForm()
+{
+	 return $("#commentForm").validate({  
+        rules: {
+            commentContent: {  
+                required: true,  
+                maxlength: 1500  
+            }
+        },  
+        messages: {  
+            commentContent: {  
+                required: "评论内容不能为空",  
+                minlength: "评论内容不能大于1500个字符"  
+            }
+        }  
+    });
+} 
+
+function addComment(){
+	if(validateForm().form())
+	{
+		$("#commentForm").submit();
+	}
+}
+
+function onReply(obj)
+{
+    var commentId=$(obj).attr("commentid"); 
+    var commentDivId = "comment-"+commentId; 
+    var isShow = $(obj).attr("isShow"); 
+    if(isShow=="false")
+	{
+		$("#"+commentDivId).show(); 
+		$(obj).attr("isShow","true");
+	}
+	else
+	{
+		$("#"+commentDivId).hide(); 
+		$(obj).attr("isShow","false");
+	}
+}
+
+function onThumbsUp(obj)
+{
+	var commentId=$(obj).attr("commentid"); 
+    var thumbsUpId = "thumbsUp-"+commentId; 
+    var thumbsNum = $("#"+thumbsUpId).html();
+    var isThumbsUp = $(obj).attr("isThumbsUp"); 
+    if(isThumbsUp=="false")
+    {
+    	$.post("/comment/thumbsUp",{commentId:commentId},
+  		function(data){
+    		if(data.code == 1)
+    		{
+    			$("#"+thumbsUpId).html(Number(thumbsNum)+1); 
+    		}
+  		}); 
+  		$(obj).attr("isThumbsUp","true");
+    }
+}
+</script>    
+<h4>
+				<span class="glyphicon glyphicon-hand-right" style="color: #333;"> </span> 社区邀请
+			</h4>
+			<p>
+				笔记社区是一个面向中高端IT开发者、程序员的知识共享社区，通过网络抓取与文章分类总结，由专家为用户提供高质量的专题文章系列。<a class="btn" href="http://www.bijishequ.com/creat.html" target="_blank"><span class="glyphicon glyphicon-import" style="color: #333;"> </span> 邀请您成为社区专家 &gt;&gt;</a>
+			</p>
+			<p>原文链接：http://www.jianshu.com/p/b403a10edfed
+			</p><p>声明：所有文章资源均从网络抓取，如果侵犯到您的著作权，请联系删除文章。联系方式请关注微信公众号PMvideo【锤子视频-程序员喜欢的短视频】，笔记社区开发者交流群 628286713。 </p>
+
+		</div>
+		<div class="col-md-4 column">
+			<div class="row clearfix">
+			<div class="col-md-6 column" style="width:28%;">
+				</div>
+				<div class="col-md-8 column">
+				
+				<div class="calendar">
+					<div class="calendar-time ">
+						<h4>6</h4>
+						<p>December</p>
+					</div>
+					
+					<div class="calendar-btn sign-in" id="calendar-btn">
+						<h4>签到</h4>
+						<p>今日签到<span id="signInCount">1</span>人</p>
+					</div>
+				</div>
+				
+				<div class="hidden-xs">
+				<h4 class="hidden-xs">关注微信公众号:PMvideo</h4>
+				<img src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/weixinvideo.png" class="img-thumbnail hidden-xs" style="width:200px;height:200px;" data-bd-imgshare-binded="1">
+				</div>
+				<div class="cloud">
+				<h4>相关标签</h4>
+				<ul>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1119" target="_blank">Linux用户与工作组</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1143" target="_blank">SELinux</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1738" target="_blank">分布式存储</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1732" target="_blank">存储系统</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1175" target="_blank">Linux关机重启</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1181" target="_blank">Linux网络命令</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1739" target="_blank">分布式数据库</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1733" target="_blank">文件系统</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1080" target="_blank">Red Hat</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1079" target="_blank">Linux</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1878" target="_blank">unix</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1082" target="_blank">CentOS</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1887" target="_blank">CPU</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1888" target="_blank">内存</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1889" target="_blank">进程</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1885" target="_blank">处理机管理</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1886" target="_blank">存储器管理</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=876" target="_blank">ServiceLoader</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=879" target="_blank">CharsetDecoder</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1023" target="_blank">垃圾收集算法</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=880" target="_blank">DecimalFormatSymbols</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1031" target="_blank">JVM垃圾收集器</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1022" target="_blank">MinorGC</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1030" target="_blank">收集器</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=877" target="_blank">DataFlavor</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1039" target="_blank">GC</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=79" target="_blank">Vector</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=172" target="_blank">Log</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=170" target="_blank">ArrayAdapter</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=171" target="_blank">MotionEvent</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=891" target="_blank">Dialog</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=77" target="_blank">SAXException</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=80" target="_blank">Intent</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=173" target="_blank">ResourceBundle</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=76" target="_blank">Executors</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1730" target="_blank">云存储</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1729" target="_blank">数据存储</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1876" target="_blank">操作系统</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1877" target="_blank">Windows</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1040" target="_blank">虚拟机性能监控分析</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=2397" target="_blank">J2EE</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1018" target="_blank">JVM垃圾收集</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1005" target="_blank">JVM</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=2761" target="_blank">编程语言</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=1001" target="_blank">JVM虚拟机</a>
+					<a class="label label-success" href="http://www.bijishequ.com/tag/list?tagId=2396" target="_blank">java</a>
+				</ul>
+				</div>
+				
+	<br>
+				<h4>相关文章</h4>
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/567657?p=" target="_blank" style="text-decoration:none;"><small>.75、django之ORM补充</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568341?p=" target="_blank" style="text-decoration:none;"><small>.SpringBoot结合LogBack打印Sql</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568427?p=" target="_blank" style="text-decoration:none;"><small>.优秀日志实践准则</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568293?p=" target="_blank" style="text-decoration:none;"><small>.优秀日志实践准则</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568609?p=" target="_blank" style="text-decoration:none;"><small>.用vue2.x注册一个全局的弹窗alert组件、confirm组件</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568590?p=" target="_blank" style="text-decoration:none;"><small>.用原型链的方式写一个类和子类</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/567947?p=" target="_blank" style="text-decoration:none;"><small>.事件分发：onTouchEvent返回false一定不执行ACTION_MOVE吗？</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568685?p=" target="_blank" style="text-decoration:none;"><small>.使用系统 Seekbar 来表示浮点数</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/568578?p=" target="_blank" style="text-decoration:none;"><small>.这可能是最简洁的登录界面－－（我的电商项目界面美化之旅）</small></a>
+					</h4>
+					
+					<h4 style="word-break: break-all;">
+						<a href="http://www.bijishequ.com/detail/567945?p=" target="_blank" style="text-decoration:none;"><small>.Dagger2一步步实现MVP</small></a>
+					</h4>
+					
+					<br>
+									<h4>相关专题</h4>
+<a target="_blank" href="http://www.bijishequ.com/subject/34" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fg3s6vjabpj308z08z74y.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     前端技术工具栈之AngularJS
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    服务端项目不同的是使用NodeServer进行承载，前端通过AngularJS/Vue.js进行功能开发，同时配合NGUI（AngularJS样式组件库）快速进行页面搭建，Node端框架选用的是Express，服务的部署通过OPS（内部的运维发布系统）完成。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 21 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/72" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fg98cb0p6uj306q06qaat.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     iOS开发:深入理解响应链
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    响应者链是一个由不同对象组成的层次结构，其中的每个对象将依次获得响应事件消息的机会。当发生事件时，事件首先被发送给第一响应者，第一响应者往往是事件发生的视图，也就是用户触摸屏幕的地方。事件将沿着响应者链一直向下传递，直到被接受并作出处理。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 7 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/110" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelgy1fgf9sr6kuqj3075075myr.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     Powershell常用命令系列
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    基于活动目录日常管理的Powershell 命令系列，收集了常用命令的使用方法，Windows PowerShell 是一种命令行外壳程序和脚本环境，使命令行用户和脚本编写者可以利用 .NET Framework的强大功能。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 8 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/165" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fgudn7zcebj308e08e0sx.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     网站架构之Nginx
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    Nginx是一款很优秀的轻量级的高性能web/反向代理服务器，主要功能包括反向代理、负载均衡、重定向、限流等。本专题收录了一些Nginx原理和运维相关的文章。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 6 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/211" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelgy1fhqn0wbxkej309i09iq3y.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     23种设计模式精讲
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    收集已有专题中自认为通俗易懂，比较好的专题刚大家学习
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 1 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/266" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fico83gz4gj308p08pq32.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     DPDK编程指南
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    DPDK是一个linux基金会的开源项目。开发DPDK的主要目的，是在数据平面应用中为快速的数据包处理提供一个简单而完善的架构。在理解此工具集之后，开发人员可以以此为基础进行新的原型设计，或简单地为我所用。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 11 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/318" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fj0z332mesj30al0aljru.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     Android 网络编程
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    在Android开发中，经常会用到网络编程相关的知识，虽然也是用，但是感觉还是不太全面。所以整理下网络编程的相关知识。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 4 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/369" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fjo1e3ih3wj309l09ldgb.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     Redis之Jedis客户端以及和Spring整合
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    Redis最常用的Java客户端莫过于Jedis了，本专题收录一下Jedis相关的文章，以及Spring框架整合Jedis的内容。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 2 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/436" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fgl2smz426j30640640ta.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     Reactjs
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    Redux，作为大型React应用状态管理最常用的工具，其概念理论和实践都是很值得我们学习，分析然后在实践中深入了解的，对前端开发者能力成长很有帮助。本篇计划结合Redux容器组件和展示型组件的区别对比以及Redux与React应用最常见的连接库，react-redux源码分析，以期达到对Redux和React应用的更深层次理解。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 1 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+<a target="_blank" href="http://www.bijishequ.com/subject/11" style="color:#333;text-decoration:none;">
+                        <div class="thumbnail">
+                            <img alt="300x200" src="./NOVA：一个支持混合 DRAM 和 NVMM 的结构化日志文件系统--Linux,CPU,GC,Log,NOVA,inode,page,更新_files/006PUlelly1fg3nlreb09j30790780t9.jpg" class="img-circle" style="height:80px;margin-top: 20px;" data-bd-imgshare-binded="1">
+                            <div class="caption">
+                                <h4 class="text-center" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;word-break: break-all;">
+                                     springboot框架搭建学习与实例
+                                </h4>
+                                <p style="height:80px;overflow:hidden;">
+                                    这是我学习SpringBoot的入门系列哦，欢迎阅读。SpringBoot的推出不是用来替代Spirng的，而是精简Spring的配置的。也就是优化Spirng的。
+                                </p>
+                               
+                                
+                 <h5 class="text-center">
+                         <small>共<strong> 11 </strong>篇文章</small>
+                    </h5>
+                            </div>
+                        </div>
+                    </a>
+
+			
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</div>
+			<div class="col-md-12 column" style="margin-bottom:30px;margin-top:60px;border-bottom:1px solid #f0f0f0;">
+		</div>			
+						<h3>
+						<small>
+						精选专题
+						</small>
+						</h3>
+						<div class="row">
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-go"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/spring-series.html">spring系列</a>
+						<small>1893篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-javascript"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/orm.html">ORM</a>
+						<small>1622篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-php"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/cache.html">缓存</a>
+						<small>2346篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-ruby"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/mq.html">消息中间件</a>
+						<small>534篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-java"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/ds.html">分布式服务</a>
+						<small>1792篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-python"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/nio.html">Nio框架</a>
+						<small>691篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-c#"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/concurrent.html">并发编程</a>
+						<small>2110篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-css"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/network.html">网络基础</a>
+						<small>18925篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-html"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/searchEngine.html">搜索引擎</a>
+						<small>962篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-coffeescript"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/design-mode.html">设计模式</a>
+						<small>2941篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-objective-c"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/other-arch.html">其他arch</a>
+						<small>2837篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-typescript"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/computer.html">计算机基础</a>
+						<small>2885篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-scala"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/os.html">操作系统</a>
+						<small>11.2篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-swift"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/developer.html">开发工具</a>
+						<small>3575篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-clojure"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/nginx.html">Nginx</a>
+						<small>1095篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-perl"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/jvm.html">JVM虚拟机</a>
+						<small>1239篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-c"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/monitor.html">系统监控</a>
+						<small>968篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-rust"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/log.html">日志分析</a>
+						<small>830篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-c++"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/hadoop.html">Hadoop</a>
+						<small>5091篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-haskell"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/mongodb.html">Mongodb</a>
+						<small>666篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-shell"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/android.html">Android开发</a>
+						<small>18345篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-elixir"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/ios.html">IOS开发</a>
+						<small>640篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-emacs lisp"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/mobile-game.html">移动游戏</a>
+						<small>1935篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-dart"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/react-native.html">React-Native</a>
+						<small>465篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-r"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/front.html">前端基础</a>
+						<small>11854篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-d"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/html5.html">HTML5 </a>
+						<small>12402篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-f#"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/reactjs.html">ReactJs</a>
+						<small>102篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-haxe"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/angularjs.html">AngularJs</a>
+						<small>354篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-makefile"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/bigdata.html">大数据</a>
+						<small>18102篇</small>
+						</div>
+						</h4>
+						</div>
+						<div class="language col-xs-6 col-sm-4 col-md-4">
+						<h4>
+						<div class="pictogram pictogram-groovy"></div>
+						<div class="blurb">
+						<a href="http://www.bijishequ.com/info/ai.html">人工智能</a>
+						<small>9530篇</small>
+						</div>
+						</h4>
+						</div>
+						</div>						<footer id="footer" class="footer hidden-print text-center text-muted" style="margin-top:30px;margin-bottom:60px;"><div class="container" style="width:76%;"><div class="copy-right"><span>笔记社区www.<a href="http://www.bijishequ.com/" target="_blank">bijishequ</a>.com© 2016-2017</span> 京ICP备16050282</div></div></footer>
+						<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?a79f7d09275b96369a9c7fb68111436c";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+var divM = document.getElementById("calendar-btn");
+    divM.onclick = function () {
+           $.ajax({
+             type: "GET",
+             url: "/singIn",
+             dataType: "json",
+             success: function(result){
+                        $('#signInCount').html(result);
+                      }
+         });
+       }
+</script>
+
+</div><div id="bdimgshare_1512560717983" class="sr-bdimgshare sr-bdimgshare-list sr-bdimgshare-16 sr-bdimgshare-black" style="height:36px;line-height:26px;font-size:12px;width:autopx;display:none;" data-bd-bind="1512560717982"><div class="bdimgshare-bg"></div><div class="bdimgshare-content bdsharebuttonbox bdshare-button-style0-16"><label class="bdimgshare-lbl">分享到：</label><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_weixin" data-cmd="weixin" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_qzone" data-cmd="qzone" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_evernotecn" data-cmd="evernotecn" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_youdao" data-cmd="youdao" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_linkedin" data-cmd="linkedin" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_fbook" data-cmd="fbook" hidefocus=""></a><a href="http://www.bijishequ.com/detail/564817?p=#" onclick="return false;" class="bds_more" data-cmd="more" hidefocus=""></a></div></div></body></html>

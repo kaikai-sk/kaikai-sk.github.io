@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<!-- saved from url=(0045)http://www.cnblogs.com/tolimit/p/5398552.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园</title>
+<link type="text/css" rel="stylesheet" href="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/blog-common.css">
+<link id="MainCss" type="text/css" rel="stylesheet" href="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/bundle-Minyx2_Lite.css">
+<link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/bundle-Minyx2_Lite-mobile.css">
+<link title="RSS" type="application/rss+xml" rel="alternate" href="http://www.cnblogs.com/tolimit/rss">
+<link title="RSD" type="application/rsd+xml" rel="EditURI" href="http://www.cnblogs.com/tolimit/rsd.xml">
+<link type="application/wlwmanifest+xml" rel="wlwmanifest" href="http://www.cnblogs.com/tolimit/wlwmanifest.xml">
+<script async="" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/analytics.js.下载"></script><script type="text/javascript" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/encoder.js.下载"></script><script src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/jquery-2.2.0.min.js.下载"></script>
+<script type="text/javascript">var currentBlogApp = 'tolimit', cb_enable_mathjax=true;var isLogined=false;</script>
+<script type="text/x-mathjax-config;executed=true">
+    MathJax.Hub.Config({
+        tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']], processClass: 'blogpost-body', processEscapes: true },
+        TeX: { 
+            equationNumbers: { autoNumber: ['AMS'], useLabelIds: true }, extensions: ['extpfeil.js'] },
+            'HTML-CSS': { linebreaks: { automatic: true } },
+            SVG: { linebreaks: { automatic: true } }
+        });
+    </script><script src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/MathJax.js.下载"></script>
+<script src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/blog-common.js.下载" type="text/javascript"></script>
+<script src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/bundle-Minyx2_Lite.js.下载" language="javascript" type="text/javascript"></script>
+<style type="text/css">.MathJax_Hover_Frame {border-radius: .25em; -webkit-border-radius: .25em; -moz-border-radius: .25em; -khtml-border-radius: .25em; box-shadow: 0px 0px 15px #83A; -webkit-box-shadow: 0px 0px 15px #83A; -moz-box-shadow: 0px 0px 15px #83A; -khtml-box-shadow: 0px 0px 15px #83A; border: 1px solid #A6D ! important; display: inline-block; position: absolute}
+.MathJax_Menu_Button .MathJax_Hover_Arrow {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 4px; -webkit-border-radius: 4px; -moz-border-radius: 4px; -khtml-border-radius: 4px; font-family: 'Courier New',Courier; font-size: 9px; color: #F0F0F0}
+.MathJax_Menu_Button .MathJax_Hover_Arrow span {display: block; background-color: #AAA; border: 1px solid; border-radius: 3px; line-height: 0; padding: 4px}
+.MathJax_Hover_Arrow:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_Hover_Arrow:hover span {background-color: #CCC!important}
+</style><style type="text/css">#MathJax_About {position: fixed; left: 50%; width: auto; text-align: center; border: 3px outset; padding: 1em 2em; background-color: #DDDDDD; color: black; cursor: default; font-family: message-box; font-size: 120%; font-style: normal; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; border-radius: 15px; -webkit-border-radius: 15px; -moz-border-radius: 15px; -khtml-border-radius: 15px; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_About.MathJax_MousePost {outline: none}
+.MathJax_Menu {position: absolute; background-color: white; color: black; width: auto; padding: 2px; border: 1px solid #CCCCCC; margin: 0; cursor: default; font: menu; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; z-index: 201; box-shadow: 0px 10px 20px #808080; -webkit-box-shadow: 0px 10px 20px #808080; -moz-box-shadow: 0px 10px 20px #808080; -khtml-box-shadow: 0px 10px 20px #808080; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+.MathJax_MenuItem {padding: 2px 2em; background: transparent}
+.MathJax_MenuArrow {position: absolute; right: .5em; padding-top: .25em; color: #666666; font-size: .75em}
+.MathJax_MenuActive .MathJax_MenuArrow {color: white}
+.MathJax_MenuArrow.RTL {left: .5em; right: auto}
+.MathJax_MenuCheck {position: absolute; left: .7em}
+.MathJax_MenuCheck.RTL {right: .7em; left: auto}
+.MathJax_MenuRadioCheck {position: absolute; left: 1em}
+.MathJax_MenuRadioCheck.RTL {right: 1em; left: auto}
+.MathJax_MenuLabel {padding: 2px 2em 4px 1.33em; font-style: italic}
+.MathJax_MenuRule {border-top: 1px solid #CCCCCC; margin: 4px 1px 0px}
+.MathJax_MenuDisabled {color: GrayText}
+.MathJax_MenuActive {background-color: Highlight; color: HighlightText}
+.MathJax_MenuDisabled:focus, .MathJax_MenuLabel:focus {background-color: #E8E8E8}
+.MathJax_ContextMenu:focus {outline: none}
+.MathJax_ContextMenu .MathJax_MenuItem:focus {outline: none}
+#MathJax_AboutClose {top: .2em; right: .2em}
+.MathJax_Menu .MathJax_MenuClose {top: -10px; left: -10px}
+.MathJax_MenuClose {position: absolute; cursor: pointer; display: inline-block; border: 2px solid #AAA; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; font-family: 'Courier New',Courier; font-size: 24px; color: #F0F0F0}
+.MathJax_MenuClose span {display: block; background-color: #AAA; border: 1.5px solid; border-radius: 18px; -webkit-border-radius: 18px; -moz-border-radius: 18px; -khtml-border-radius: 18px; line-height: 0; padding: 8px 0 6px}
+.MathJax_MenuClose:hover {color: white!important; border: 2px solid #CCC!important}
+.MathJax_MenuClose:hover span {background-color: #CCC!important}
+.MathJax_MenuClose:hover:focus {outline: none}
+</style><style type="text/css">.MathJax_Preview .MJXf-math {color: inherit!important}
+</style><style type="text/css">.MJX_Assistive_MathML {position: absolute!important; top: 0; left: 0; clip: rect(1px, 1px, 1px, 1px); padding: 1px 0 0 0!important; border: 0!important; height: 1px!important; width: 1px!important; overflow: hidden!important; display: block!important; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none}
+.MJX_Assistive_MathML.MJX_Assistive_MathML_Block {width: 100%!important}
+</style><style type="text/css">#MathJax_Zoom {position: absolute; background-color: #F0F0F0; overflow: auto; display: block; z-index: 301; padding: .5em; border: 1px solid black; margin: 0; font-weight: normal; font-style: normal; text-align: left; text-indent: 0; text-transform: none; line-height: normal; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; -webkit-box-sizing: content-box; -moz-box-sizing: content-box; box-sizing: content-box; box-shadow: 5px 5px 15px #AAAAAA; -webkit-box-shadow: 5px 5px 15px #AAAAAA; -moz-box-shadow: 5px 5px 15px #AAAAAA; -khtml-box-shadow: 5px 5px 15px #AAAAAA; filter: progid:DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')}
+#MathJax_ZoomOverlay {position: absolute; left: 0; top: 0; z-index: 300; display: inline-block; width: 100%; height: 100%; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+#MathJax_ZoomFrame {position: relative; display: inline-block; height: 0; width: 0}
+#MathJax_ZoomEventTrap {position: absolute; left: 0; top: 0; z-index: 302; display: inline-block; border: 0; padding: 0; margin: 0; background-color: white; opacity: 0; filter: alpha(opacity=0)}
+</style><style type="text/css">.MathJax_Preview {color: #888}
+#MathJax_Message {position: fixed; left: 1em; bottom: 1.5em; background-color: #E6E6E6; border: 1px solid #959595; margin: 0px; padding: 2px 8px; z-index: 102; color: black; font-size: 80%; width: auto; white-space: nowrap}
+#MathJax_MSIE_Frame {position: absolute; top: 0; left: 0; width: 0px; z-index: 101; border: 0px; margin: 0px; padding: 0px}
+.MathJax_Error {color: #CC0000; font-style: italic}
+</style><style type="text/css">.MJXp-script {font-size: .8em}
+.MJXp-right {-webkit-transform-origin: right; -moz-transform-origin: right; -ms-transform-origin: right; -o-transform-origin: right; transform-origin: right}
+.MJXp-bold {font-weight: bold}
+.MJXp-italic {font-style: italic}
+.MJXp-scr {font-family: MathJax_Script,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-frak {font-family: MathJax_Fraktur,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-sf {font-family: MathJax_SansSerif,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-cal {font-family: MathJax_Caligraphic,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-mono {font-family: MathJax_Typewriter,'Times New Roman',Times,STIXGeneral,serif}
+.MJXp-largeop {font-size: 150%}
+.MJXp-largeop.MJXp-int {vertical-align: -.2em}
+.MJXp-math {display: inline-block; line-height: 1.2; text-indent: 0; font-family: 'Times New Roman',Times,STIXGeneral,serif; white-space: nowrap; border-collapse: collapse}
+.MJXp-display {display: block; text-align: center; margin: 1em 0}
+.MJXp-math span {display: inline-block}
+.MJXp-box {display: block!important; text-align: center}
+.MJXp-box:after {content: " "}
+.MJXp-rule {display: block!important; margin-top: .1em}
+.MJXp-char {display: block!important}
+.MJXp-mo {margin: 0 .15em}
+.MJXp-mfrac {margin: 0 .125em; vertical-align: .25em}
+.MJXp-denom {display: inline-table!important; width: 100%}
+.MJXp-denom > * {display: table-row!important}
+.MJXp-surd {vertical-align: top}
+.MJXp-surd > * {display: block!important}
+.MJXp-script-box > *  {display: table!important; height: 50%}
+.MJXp-script-box > * > * {display: table-cell!important; vertical-align: top}
+.MJXp-script-box > *:last-child > * {vertical-align: bottom}
+.MJXp-script-box > * > * > * {display: block!important}
+.MJXp-mphantom {visibility: hidden}
+.MJXp-munderover {display: inline-table!important}
+.MJXp-over {display: inline-block!important; text-align: center}
+.MJXp-over > * {display: block!important}
+.MJXp-munderover > * {display: table-row!important}
+.MJXp-mtable {vertical-align: .25em; margin: 0 .125em}
+.MJXp-mtable > * {display: inline-table!important; vertical-align: middle}
+.MJXp-mtr {display: table-row!important}
+.MJXp-mtd {display: table-cell!important; text-align: center; padding: .5em 0 0 .5em}
+.MJXp-mtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-mlabeledtr {display: table-row!important}
+.MJXp-mlabeledtr > .MJXp-mtd:first-child {padding-left: 0}
+.MJXp-mlabeledtr:first-child > .MJXp-mtd {padding-top: 0}
+.MJXp-merror {background-color: #FFFF88; color: #CC0000; border: 1px solid #CC0000; padding: 1px 3px; font-style: normal; font-size: 90%}
+.MJXp-scale0 {-webkit-transform: scaleX(.0); -moz-transform: scaleX(.0); -ms-transform: scaleX(.0); -o-transform: scaleX(.0); transform: scaleX(.0)}
+.MJXp-scale1 {-webkit-transform: scaleX(.1); -moz-transform: scaleX(.1); -ms-transform: scaleX(.1); -o-transform: scaleX(.1); transform: scaleX(.1)}
+.MJXp-scale2 {-webkit-transform: scaleX(.2); -moz-transform: scaleX(.2); -ms-transform: scaleX(.2); -o-transform: scaleX(.2); transform: scaleX(.2)}
+.MJXp-scale3 {-webkit-transform: scaleX(.3); -moz-transform: scaleX(.3); -ms-transform: scaleX(.3); -o-transform: scaleX(.3); transform: scaleX(.3)}
+.MJXp-scale4 {-webkit-transform: scaleX(.4); -moz-transform: scaleX(.4); -ms-transform: scaleX(.4); -o-transform: scaleX(.4); transform: scaleX(.4)}
+.MJXp-scale5 {-webkit-transform: scaleX(.5); -moz-transform: scaleX(.5); -ms-transform: scaleX(.5); -o-transform: scaleX(.5); transform: scaleX(.5)}
+.MJXp-scale6 {-webkit-transform: scaleX(.6); -moz-transform: scaleX(.6); -ms-transform: scaleX(.6); -o-transform: scaleX(.6); transform: scaleX(.6)}
+.MJXp-scale7 {-webkit-transform: scaleX(.7); -moz-transform: scaleX(.7); -ms-transform: scaleX(.7); -o-transform: scaleX(.7); transform: scaleX(.7)}
+.MJXp-scale8 {-webkit-transform: scaleX(.8); -moz-transform: scaleX(.8); -ms-transform: scaleX(.8); -o-transform: scaleX(.8); transform: scaleX(.8)}
+.MJXp-scale9 {-webkit-transform: scaleX(.9); -moz-transform: scaleX(.9); -ms-transform: scaleX(.9); -o-transform: scaleX(.9); transform: scaleX(.9)}
+.MathJax_PHTML .noError {vertical-align: ; font-size: 90%; text-align: left; color: black; padding: 1px 3px; border: 1px solid}
+</style></head>
+<body><div id="MathJax_Message" style="display: none;"></div>
+<a name="top"></a>
+
+
+<div id="container">
+    <a class="minyx" href="http://www.cnblogs.com/">代码改变世界</a>
+    <ul id="topMnu">
+        <!-- 统计数据 -->
+        <li>
+            
+                <div id="blog_stats">
+Posts - 55, 
+Articles - 0, 
+Comments - 50
+<!----></div>
+            
+        </li>
+        <!-- 这边可以增加一些链接 -->
+        <!-- 博客园 -->
+        <li><a href="http://www.cnblogs.com/">Cnblogs</a></li>
+        <!-- 管理 -->
+        <li id="topMnu-dashboard">
+            <a id="lnkDashboard" href="http://www.cnblogs.com/tolimit/admin/EditPosts.aspx">Dashboard</a></li>
+        <li>
+            <a id="lnkLogin" href="http://passport.cnblogs.com/login.aspx?ReturnUrl=http://www.cnblogs.com/tolimit/p/5398552.html">Login</a></li>
+    </ul>
+
+    <script type="text/javascript">
+        var m = window.__blog.topMenuRendered;
+        if (m) { m(__$("topMnu")); }
+    </script>
+
+    <div id="header">
+        <ul id="menu">
+            <!-- 首页，当前section加上current类 -->
+            <li id="menu-home" class="current">
+                <a id="lnkHome" href="http://www.cnblogs.com/tolimit/">Home</a></li>
+            <!-- 联系 -->
+            <li id="menu-contact">
+                <a id="lnkContact" href="http://space.cnblogs.com/msg/send/tolimit">Contact</a></li>
+            <!-- 相册 -->
+            <li id="menu-gallary">
+                <a id="lnkGallery" href="http://www.cnblogs.com/tolimit/gallery.html">Gallery</a></li>
+            <!-- Rss订阅 -->
+            <li id="rss">
+                <a id="lnkRss" href="http://www.cnblogs.com/tolimit/rss">RSS</a></li>
+        </ul>
+        <div id="newmsg"></div>
+        <h1>
+            <!-- 主标题 -->
+            <a id="lnkBlogTitle" href="http://www.cnblogs.com/tolimit/">tolimit</a>
+            <!-- 子标题 -->
+            <small>
+                格物&nbsp;致知&nbsp;诚意&nbsp;正心&nbsp;修身&nbsp;齐家&nbsp;治国&nbsp;平天下</small>
+        </h1>
+    </div>
+
+    <script type="text/javascript">
+        var m = window.__blog.headerRendered;
+        if (m) { m(__$("header")); }
+    </script>
+
+    <div id="wrapper">
+        <div id="content">
+            <script type="text/javascript">
+                var m = window.__blog.preRenderPosts;
+                if (m) { m(); }
+            </script>
+            
+<div id="post_detail">
+<div class="post" id="post">
+    <a name="top"></a>
+    <h2><a id="cb_post_title_url" href="http://www.cnblogs.com/tolimit/p/5398552.html">linux内存源码分析 - 内存回收(匿名页反向映射)</a></h2>
+    <small>2016-04-17 15:01 by tolimit, <span id="post_view_count">2590</span> 阅读, <span id="post_comment_count">6</span> 评论, <a href="http://www.cnblogs.com/tolimit/p/5398552.html#" onclick="AddToWz(5398552);return false;">收藏</a>,  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=5398552" rel="nofollow">编辑</a></small>
+    <div class="entry">
+        <div id="cnblogs_post_body" class="blogpost-body"><p><strong>本文为原创，转载请注明：<a href="http://www.cnblogs.com/tolimit/" target="_blank">http://www.cnblogs.com/tolimit/</a></strong></p>
+<p>&nbsp;</p>
+<h1>概述</h1>
+<p>　　看完了内存压缩，最近在看内存回收这块的代码，发现内容有些多，需要分几块去详细说明，首先先说说匿名页的反向映射，匿名页主要用于进程地址空间的堆、栈、还有私有匿名共享内存(用于有亲属关系的进程)，这些匿名页所属的线性区叫做匿名线性区，这些线性区只映射内存，不映射具体磁盘上的文件。匿名页的反向映射对匿名页的回收起到了很大的作用。为了进行内存回收，内核为每个zone管理区的内存页维护了5个LRU链表(最近最少使用链表)，它们分别是：LRU_INACTIVE_ANON、LRU_ACTIVE_ANON、LRU_INACTIVE_FILE、LRU_ACTIVE_FILE、LRU_UNEVICTABLE。</p>
+<ul>
+<li>LRU_INACTIVE_ANON：保存所属zone中的非活动匿名页，每次会从链表头部加入，这里的匿名页都是从LRU_ACTIVE_ANON链表中移动过来的。这个链表长度一般为所属zone的匿名页数量的25%</li>
+<li>LRU_ACTIVE_ANON：保存所属zone中的活动匿名页，每次会从链表头部加入，当LRU_INACTIVE_ANON的数量不足所属zone的25%时，会从LRU_ACTIVE_ANON链表末尾移动一些页到LRU_INACTIVE_ANON链表头部。</li>
+<li>LRU_INACTIVE_FILE：保存所属zone中的非活动文件页，同LRU_INACTIVE_ANON类似。</li>
+<li>LRU_ACTIVE_FILE：保存所属zone中的活动文件页，同LRU_ACTIVE_ANON类似。</li>
+<li>LRU_UNEVICTABLE：保存所属zone中的禁止回收的页，一般这些页通过mlock被锁在内存中。</li>
+</ul>
+<p>　　这篇文章先不详细描述这几个LRU链表，主要先说匿名页的反向映射，在LRU_INACTIVE_ANON和LRU_ACTIVE_ANON这两个链表中，链入的是物理页框对应的页描述符。当要进行内存回收时，内存回收函数会扫描LRU_INACTIVE_ANON链表中的页，将一部分页放入swap，然后释放掉这个物理页框，这时候会有个问题，有些进程已经将这个页映射到了它们的页表中，如果要讲页换出就需要对映射了此页的进程页表进行处理，并且映射了此页的进程很多时候并不是只有一个。匿名页反向映射就是作用在这种场景，它能够通过物理页框的页描述符，找到所有映射了此页的匿名线性区vma和所属的进程，然后通过修改这些进程的页表，标记此页已被换出内存，之后这些进程访问到此页时，就能够进行相应的处理。</p>
+<p>&nbsp;</p>
+<h1>数据结构</h1>
+<p>　　关于反向映射，需要稍微说几个数据结构，分别是内存描述符struct mm_struct，线性区描述符struct vm_area_struct，页描述符struct page，匿名线性区描述符struct anon_vma，和匿名线性区结点描述符struct anon_vma_chain。</p>
+<p>　　每个进程都有自己的内存描述符struct mm_struct，除了内核线程(使用前一个进程的mm_struct)、轻量级进程(使用父进程的mm_struct)。在这个mm_struct中，在反向映射中，我们比较关心的参数如下：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 内存描述符，每个进程都会有一个，除了内核线程(使用被调度出去的进程的mm_struct)和轻量级进程(使用父进程的mm_struct) </span><span style="color: #008000;">*/</span>
+<span style="color: #008000;">/*</span><span style="color: #008000;"> 所有的内存描述符存放在一个双向链表中，链表中第一个元素是init_mm，它是初始化阶段进程0的内存描述符 </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">struct</span><span style="color: #000000;"> mm_struct {
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 指向线性区对象的链表头，链表是经过排序的，按线性地址升序排列，里面包括了匿名映射线性区和文件映射线性区 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> vm_area_struct *mmap;        <span style="color: #008000;">/*</span><span style="color: #008000;"> list of VMAs </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 指向线性区对象的红黑树的根，一个内存描述符的线性区会用两种方法组织，链表和红黑树，红黑树适合内存描述符有非常多线性区的情况 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span><span style="color: #000000;"> rb_root mm_rb;
+    u32 vmacache_seqnum;                   </span><span style="color: #008000;">/*</span><span style="color: #008000;"> per-thread vmacache </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+#ifdef CONFIG_MMU
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 在进程地址空间中找一个可以使用的线性地址空间，查找一个空闲的地址区间
+     * len: 指定区间的长度
+     * 返回新区间的起始地址
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> (*get_unmapped_area) (<span style="color: #0000ff;">struct</span> file *<span style="color: #000000;">filp,
+                unsigned </span><span style="color: #0000ff;">long</span> addr, unsigned <span style="color: #0000ff;">long</span><span style="color: #000000;"> len,
+                unsigned </span><span style="color: #0000ff;">long</span> pgoff, unsigned <span style="color: #0000ff;">long</span><span style="color: #000000;"> flags);
+</span><span style="color: #0000ff;">#endif</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 标识第一个分配的匿名线性区或文件内存映射的线性地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> mmap_base;        <span style="color: #008000;">/*</span><span style="color: #008000;"> base of mmap area </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> mmap_legacy_base;         <span style="color: #008000;">/*</span><span style="color: #008000;"> base of mmap area in bottom-up allocations </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> task_size;        <span style="color: #008000;">/*</span><span style="color: #008000;"> size of task vm space </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 所有vma中最大的结束地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> highest_vm_end;        <span style="color: #008000;">/*</span><span style="color: #008000;"> highest vma end address </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 指向页全局目录 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pgd_t </span>*<span style="color: #000000;"> pgd;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 次使用计数器，存放了共享此mm_struct的轻量级进程的个数，但所有的mm_users在mm_count的计算中只算作1 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    atomic_t mm_users;        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 初始为1 </span><span style="color: #008000;">*/</span>    
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 主使用计数器，当mm_count递减时，系统会检查是否为0，为0则解除这个mm_struct </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    atomic_t mm_count;        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 初始为1 </span><span style="color: #008000;">*/</span>        
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 页表数 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    atomic_long_t nr_ptes;            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Page table pages </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区的个数，默认最多是65535个，系统管理员可以通过写/proc/sys/vm/max_map_count文件修改这个值 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">int</span> map_count;                <span style="color: #008000;">/*</span><span style="color: #008000;"> number of VMAs </span><span style="color: #008000;">*/</span>
+    
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区的自旋锁和页表的自旋锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    spinlock_t page_table_lock;        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Protects page tables and some counters </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区的读写信号量，当需要对某个线性区进行操作时，会获取 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span><span style="color: #000000;"> rw_semaphore mmap_sem;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 用于链入双向链表中 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> list_head mmlist;        <span style="color: #008000;">/*</span><span style="color: #008000;"> List of maybe swapped mm's.    These are globally strung
+                         * together off init_mm.mmlist, and are protected
+                         * by mmlist_lock
+                         </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 进程所拥有的最大页框数 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> hiwater_rss;    <span style="color: #008000;">/*</span><span style="color: #008000;"> High-watermark of RSS usage </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 进程线性区中的最大页数 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> hiwater_vm;    <span style="color: #008000;">/*</span><span style="color: #008000;"> High-water virtual memory usage </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 进程地址空间的大小(页框数) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> total_vm;        <span style="color: #008000;">/*</span><span style="color: #008000;"> Total pages mapped </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 锁住而不能换出的页的数量 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> locked_vm;    <span style="color: #008000;">/*</span><span style="color: #008000;"> Pages that have PG_mlocked set </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> pinned_vm;    <span style="color: #008000;">/*</span><span style="color: #008000;"> Refcount permanently increased </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 共享文件内存映射中的页数量 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> shared_vm;    <span style="color: #008000;">/*</span><span style="color: #008000;"> Shared pages (files) </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 可执行内存映射中的页数量 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> exec_vm;        <span style="color: #008000;">/*</span><span style="color: #008000;"> VM_EXEC &amp; ~VM_WRITE </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 用户态堆栈的页数量 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> stack_vm;        <span style="color: #008000;">/*</span><span style="color: #008000;"> VM_GROWSUP/DOWN </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> def_flags;
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> start_code: 可执行代码的起始位置
+     * end_code: 可执行代码的最后位置
+     * start_data: 已初始化数据的起始位置
+     * end_data: 已初始化数据的最后位置
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> start_code, end_code, start_data, end_data;
+    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> start_brk:   堆的起始位置
+     * brk:         堆的当前最后地址
+     * start_stack: 用户态栈的起始地址
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> start_brk, brk, start_stack;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> arg_start: 命令行参数的起始位置
+     * arg_end:   命令行参数的最后位置
+     * env_start: 环境变量的起始位置
+     * env_end:   环境变量的最后位置
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> arg_start, arg_end, env_start, env_end;
+ </span><span style="color: #000000;">
+#ifdef CONFIG_MEMCG
+    </span><span style="color: #008000;">/* 所属进程 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> task_struct __rcu *<span style="color: #000000;">owner;
+</span><span style="color: #0000ff;">#endif</span>
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 代码段中映射的可执行文件的file </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> file *<span style="color: #000000;">exe_file;<br>　　......<br></span><span style="color: #000000;">
+};</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　这里面需要注意的就是mmap链表和mm_rb这个红黑树，一个进程的所有线性区vma都会被链入此进程的mm_struct中的mmap链表和mm_rb红黑树，这两个都是为了查找线性区vma方便。</p>
+<p>　　再来看看线性区vma描述符，线性区分为匿名映射线性区和文件映射线性区，如下：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 描述线性区结构 
+ * 内核尽力把新分配的线性区与紧邻的现有线性区进程合并。如果两个相邻的线性区访问权限相匹配，就能把它们合并在一起。
+ * 每个线性区都有一组连续号码的页(非页框)所组成，而页只有在被访问的时候系统会产生缺页异常，在异常中分配页框
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">struct</span><span style="color: #000000;"> vm_area_struct {</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区内的第一个线性地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> vm_start;        
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区之外的第一个线性地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> vm_end;        
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 整个链表会按地址大小递增排序 </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> vm_next: 线性区链表中的下一个线性区 </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> vm_prev: 线性区链表中的上一个线性区 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> vm_area_struct *vm_next, *<span style="color: #000000;">vm_prev;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 用于组织当前内存描述符的线性区的红黑树的结点 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span><span style="color: #000000;"> rb_node vm_rb;
+
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 此vma的子树中最大的空闲内存块大小(bytes) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> rb_subtree_gap;</span>
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 指向所属的内存描述符 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> mm_struct *<span style="color: #000000;">vm_mm;    
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 页表项标志的初值，当增加一个页时，内核根据这个字段的值设置相应页表项中的标志 </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 页表中的User/Supervisor标志应当总被置1 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pgprot_t vm_page_prot;        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Access permissions of this VMA. </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 线性区标志
+     * 读写可执行权限会复制到页表项中，由分页单元去检查这几个权限
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> vm_flags;        <span style="color: #008000;">/*</span><span style="color: #008000;"> Flags, see mm.h. </span><span style="color: #008000;">*/</span>
+
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 链接到反向映射所使用的数据结构，用于文件映射的线性区，主要用于文件页的反向映射 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    union {
+        </span><span style="color: #0000ff;">struct</span><span style="color: #000000;"> {
+            </span><span style="color: #0000ff;">struct</span><span style="color: #000000;"> rb_node rb;
+            unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> rb_subtree_last;
+        } linear;
+        </span><span style="color: #0000ff;">struct</span><span style="color: #000000;"> list_head nonlinear;
+    } shared;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 
+     * 指向匿名线性区链表头的指针，这个链表会将此mm_struct中的所有匿名线性区链接起来
+     * 匿名的MAP_PRIVATE、堆和栈的vma都会存在于这个anon_vma_chain链表中
+     * 如果mm_struct的anon_vma为空，那么其anon_vma_chain也一定为空
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> list_head anon_vma_chain; <span style="color: #008000;">/*</span><span style="color: #008000;"> Serialized by mmap_sem &amp;
+                      * page_table_lock </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 指向anon_vma数据结构的指针，对于匿名线性区，此为重要结构 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> anon_vma *anon_vma;    
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 指向线性区操作的方法，特殊的线性区会设置，默认会为空 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">const</span> <span style="color: #0000ff;">struct</span> vm_operations_struct *<span style="color: #000000;">vm_ops;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果此vma用于映射文件，那么保存的是在映射文件中的偏移量。如果是匿名线性区，它等于0或者vma开始地址对应的虚拟页框号(vm_start &gt;&gt; PAGE_SIZE)，这个虚拟页框号用于vma向下增长时反向映射的计算(栈) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> vm_pgoff;        
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 指向映射文件的文件对象，也可能指向建立shmem共享内存中返回的struct file，如果是匿名线性区，此值为NULL或者一个匿名文件(这个匿名文件跟swap有关?待看) </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> file *<span style="color: #000000;"> vm_file;        
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 指向内存区的私有数据 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">void</span> * vm_private_data;        <span style="color: #008000;">/*</span><span style="color: #008000;"> was vm_pte (shared mem) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+<br>　　......<br>
+#ifndef CONFIG_MMU
+    </span><span style="color: #0000ff;">struct</span> vm_region *<span style="color: #000000;">vm_region;    
+</span><span style="color: #0000ff;">#endif</span><span style="color: #000000;">
+#ifdef CONFIG_NUMA
+    </span><span style="color: #0000ff;">struct</span> mempolicy *<span style="color: #000000;">vm_policy;    
+</span><span style="color: #0000ff;">#endif<br></span><span style="color: #000000;">
+};</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　对我们匿名页的反向映射来说，在vma中最重要的就是struct anon_vma * anon_vma和struct list_head anon_vma_chain。前者指向此一个匿名线性区的anon_vma结构，而anon_vma_chain用于整理一个所有属于本vma的anon_vma_chain链表。具体后面会分析。</p>
+<p>　　我们再看看struct anon_vma结构，这个结构是几乎每个匿名线性区vma都会有的(除了两个相邻并且特征相同的匿名线性区会使用同一个anon_vma)：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 匿名线性区描述符，每个匿名vma都会有一个这个结构 </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">struct</span><span style="color: #000000;"> anon_vma {
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 指向此anon_vma所属的root </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> anon_vma *root;        <span style="color: #008000;">/*</span><span style="color: #008000;"> Root of this anon_vma tree </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 读写信号量 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> rw_semaphore rwsem;    <span style="color: #008000;">/*</span><span style="color: #008000;"> W: modification, R: walking the list </span><span style="color: #008000;">*/</span>
+
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 红黑树中结点数量，初始化时为1，也就是只有本结点，当加入root的anon_vma的红黑树时，此值不变 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    atomic_t refcount;
+
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 红黑树的根，用于存放引用了此anon_vma所属线性区中的页的其他线性区，用于匿名页反向映射 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> rb_root rb_root;    <span style="color: #008000;">/*</span><span style="color: #008000;"> Interval tree of private "related" vmas </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+};</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　这里面重要的是一个root指针，和一个rb_root红黑树，root指针指向此anon_vma的root(并不是指向其所属的vma)，然后红黑树时用于将不同进程的anon_vma_chain加入进来。单这样看此结构现在看来比较难以理解，先不用管，之后慢慢分析。</p>
+<p>　　再看看struct anon_vma_chain结构：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #0000ff;">struct</span><span style="color: #000000;"> anon_vma_chain {
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 此结构所属的vma </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 此结构加入的红黑树所属的anon_vma </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> anon_vma *<span style="color: #000000;">anon_vma;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 用于加入到所属vma的anon_vma_chain链表中 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> list_head same_vma;  
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 用于加入到其他进程或者本进程vma的anon_vma的红黑树中 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> rb_node rb;           <span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> rb_subtree_last;
+#ifdef CONFIG_DEBUG_VM_RB
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> cached_vma_start, cached_vma_last;
+</span><span style="color: #0000ff;">#endif</span><span style="color: #000000;">
+};</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　这个anon_vma_chain有两个重要的结点，一个anon_vma_chain链表结点，一个红黑树结点，anon_vma_chain链表结点用于加入到其所属的vma中，而rb红黑树结点加入到其他进程或者本进程的vma的anon_vma的红黑树中。</p>
+<p>　　还有一个页描述符struct page，我们主要关心的就是它的mapping变量，如果此页是匿名页，它的mapping变量会指向第一个访问此页的vma的anon_vma：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #0000ff;">struct</span><span style="color: #000000;"> page {
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> First double word block </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 用于页描述符，一组标志(如PG_locked、PG_error)，同时页框所在的管理区和node的编号也保存在当中 </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 在lru算法中主要用到两个标志
+     * PG_active: 表示此页当前是否活跃，当放到active_lru链表时，被置位
+     * PG_referenced: 表示此页最近是否被访问，每次页面访问都会被置位
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> flags;        <span style="color: #008000;">/*</span><span style="color: #008000;"> Atomic flags, some possibly
+                     * updated asynchronously </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    union {
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 最低两位用于判断类型，其他位数用于保存指向的地址
+         * 如果为空，则该页属于交换高速缓存(swap cache，swap时会产生竞争条件，用swap cache解决)  
+         * 不为空，如果最低位为1，该页为匿名页，指向对应的anon_vma(分配时需要对齐)
+         * 不为空，如果最低位为0，则该页为文件页，指向文件的address_space
+         </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">struct</span> address_space *mapping;    <span style="color: #008000;">/*</span><span style="color: #008000;"> If low bit clear, points to
+                         * inode address_space, or NULL.
+                         * If page mapped as anonymous
+                         * memory, low bit is set, and
+                         * it points to anon_vma object:
+                         * see PAGE_MAPPING_ANON below.
+                         </span><span style="color: #008000;">*/</span>
+        <span style="color: #008000;">/*</span><span style="color: #008000;"> 用于SLAB描述符，指向第一个对象的地址 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">void</span> *s_mem;            <span style="color: #008000;">/*</span><span style="color: #008000;"> slab first object </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    };
+
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Second double word </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span><span style="color: #000000;"> {
+        union {
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 作为不同的含义被几种内核成分使用。例如，它在页磁盘映像或匿名区中标识存放在页框中的数据的位置，或者它存放一个换出页标识符
+             * 当此页作为映射页(文件映射)时，保存这块页的数据在整个文件数据中以页为大小的偏移量
+             * 当此页作为匿名页时，保存此页在线性区vma内的页索引或者是页的线性地址/PAGE_SIZE。
+             * 对于匿名页的page-&gt;index表示的是page在vma中的虚拟页框号(此页的开始线性地址 &gt;&gt; PAGE_SIZE)。共享匿名页的产生应该只有在fork，clone完成并写时复制之前。
+             </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            pgoff_t index;        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Our offset within mapping. </span><span style="color: #008000;">*/</span>
+            <span style="color: #008000;">/*</span><span style="color: #008000;"> 用于SLAB和SLUB描述符，指向空闲对象链表 </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">void</span> *<span style="color: #000000;">freelist;    
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 当管理区页框分配器压力过大时，设置这个标志就确保这个页框专门用于释放其他页框时使用 </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">bool</span> pfmemalloc;    <span style="color: #008000;">/*</span><span style="color: #008000;"> If set by the page allocator,
+                         * ALLOC_NO_WATERMARKS was set
+                         * and the low watermark was not
+                         * met implying that the system
+                         * is under some pressure. The
+                         * caller should try ensure
+                         * this page is only used to
+                         * free other pages.
+                         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        };
+
+　　　　......</span><span style="color: #000000;">
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　主要关注mapping和index，如果此页被分配作为一个匿名页，那么它的mapping会指向一个anon_vma，而index保存此匿名页在vma中以页的偏移量(比如vma的线性地址区间是12个页的大小，此页映射到了第8页包含的线性地址上)。需要注意的是，mapping保存anon_vma变量地址时，会执行如下操作：</p>
+<div class="cnblogs_code">
+<pre>page-&gt;mapping = (<span style="color: #0000ff;">void</span> *)&amp;anon_vma + <span style="color: #800080;">1</span>;</pre>
+</div>
+<p>　　anon_vma分配时要2字节对齐，也就是所有分配的anon_vma其最低位都为0，经过上面的操作，mapping最低位就为1了，然后通过mapping获取anon_vma地址时，进行如下操作：</p>
+<div class="cnblogs_code">
+<pre><span style="color: #0000ff;">struct</span> anon_vma * anon_vma = (<span style="color: #0000ff;">struct</span> anon_vma *)(page-&gt;mapping - <span style="color: #800080;">1</span>);</pre>
+</div>
+<p>　　这里需要着重说说虚拟页框号，我们知道在物理内存中，每个地址区间(0~4K,4K~8K,8K~12K...)都有它们的页框号，则在每个进程地址空间中，每个线性地址区间(0~4K,4K~8K,8K~12K...)也应该有它们对应的虚拟页框号，这个虚拟页框号的作用之后会说到，这里只需要记住对于匿名映射区，它的vma-&gt;vm_pgoff = vma开始地址对应的虚拟页框号。</p>
+<p>　　这几个结构都看完了，后面我们具体分析内核是怎么把这几个结构组织起来，又怎么通过一个页的页描述符获得所有映射了此页的vma。我们将通过一条路径进程分析，这条路径是：一个空闲的匿名线性区访问了其所属线性地址区间的页 -&gt; 这个匿名线性区所属的进程fork了一个子进程 -&gt; 父子进程分别访问了线性区中的页。而这条路径中涉及到几个点：创建匿名页与匿名线性区的关联性、父子进程匿名线性区的关联性、父子进程继续访问此匿名线性区的页时的关联性。</p>
+<p>&nbsp;</p>
+<h1>建立反向映射流程</h1>
+<p>　　我们将通过一条路径进程分析，这条路径是：一个空闲的匿名线性区访问了其所属线性地址区间的页 -&gt; 这个匿名线性区所属的进程fork了一个子进程 -&gt; 父子进程分别访问了线性区中的页。选择这条路径是方便说明内核是如何组织匿名页反向映射的。</p>
+<p>　　建立匿名线性区有两种情况，一种是通过mmap建立私有匿名线性区，另一种是fork时子进程克隆了父进程的匿名线性区，这两种方式有所区别，首先mmap建立私有匿名线性区时，应用层调用mmap时传入的参数fd必须为-1，即不指定映射的文件，参数flags必须有MAP_ANONYMOUS和MAP_PRIVATE。如果是参数是MAP_ANONYMOUS和MAP_SHARED，创建的就不是匿名线性区了，而是使用shmem的共享内存线性区，这种shmem的共享内存线性区会使用打开/dev/zero的fd。而mmap使用MAP_ANONYMOUS和MAP_PRIVATE创建，可以得到一个空闲的匿名线性区，由于mmap代码中更多的是涉及文件映射线性区的创建，这里就先不给代码，当创建好一个匿名线性区后，结果如下：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418140913007-2125861830.png" alt=""></p>
+<p>　　创建后anon_vma和anon_vma_chain都为空，并且此线性区对应的线性地址区间的页表项也都为空，但是此vma已经创建完成，之后进程访问此vma的地址区间时合理的，我们知道，内核在创建vma时并不会马上对整个vma的地址进行页表的处理，只有在进程访问此vma的某个地址时，会产生一个缺页异常，在缺页异常中判断此地址属于进程的vma并且合理，才会分配一个页用于页表映射，之后进程就可以顺利读写这个地址所在的页框。也就是说，我一个匿名线性区vma，开始地址是0，结束地址是8K，当我访问6k这个地址时，内核会做好4K~8K地址的映射(正好是一个页大小，四级页表中一个页表项映射的大小)，而此匿名线性区0~4k的地址是没有进行映射的。只有在第一次访问的时候才会进行映射。</p>
+<p>　　对于匿名线性区，还需要注意vma的vm_start和vm_pgoff，vm_start保存的是此vma开始的线性地址，而vm_pgoff保存的是vma的开始线性地址对应的虚拟页框号，比如vma的开始线性地址是10K，那么这个vm_pgoff就等于3(起始线性地址属于第3个页框的范围)。之后会说到这个有什么用作。</p>
+<p>　　这时我们假设进程访问了此新建的线性区的线性地址区间，由于此线性区是新建的，它的线性地址区间对应的页表项并不会在创建的时候进行映射，所以会产生了缺页异常，在缺页异常中首先会判断此线性地址是否所属vma，如果此线性地址所属的vma是匿名线性区，会通过此进程的页表判断发送异常的线性地址的页表项，如果是第一次访问此线性地址，此页表项必定为空并且页也肯定不在内存中(都没有映射的页)，则说明此线性地址是第一次访问到，会调用do_anonymous_page()函数进行处理，我们看看此函数是如何处理的：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配一个匿名页，并为此页建立映射和反向映射
+ * 进入此函数的条件，线性地址address对应的进程的页表项为空，并且address所属vma是匿名线性区
+ * 进入到此函数前，已经对address对应的页全局目录项、页上级目录项、页中间目录项和页表进行分配和设置
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">static</span> <span style="color: #0000ff;">int</span> do_anonymous_page(<span style="color: #0000ff;">struct</span> mm_struct *mm, <span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma,
+        unsigned </span><span style="color: #0000ff;">long</span> address, pte_t *page_table, pmd_t *<span style="color: #000000;">pmd,
+        unsigned </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> flags)
+{
+    </span><span style="color: #0000ff;">struct</span> mem_cgroup *<span style="color: #000000;">memcg;
+    </span><span style="color: #0000ff;">struct</span> page *<span style="color: #000000;">page;
+    spinlock_t </span>*<span style="color: #000000;">ptl;
+    pte_t entry;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> X86_64下这里没做任何事，而X86_32位下如果page_table之前用来建立了临时内核映射，则释放该映射 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pte_unmap(page_table);
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Check if we need to add a guard page to the stack </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 如果vma是向下增长的，并且address等于vma的起始地址，那么将vma起始地址处向下扩大一个页用于保护页 
+     * 同样，如果vma是向上增长的，address等于vma的结束地址，页将vma在结束地址处向上扩大一个页用于保护页
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (check_stack_guard_page(vma, address) &lt; <span style="color: #800080;">0</span><span style="color: #000000;">)
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> VM_FAULT_SIGBUS;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Use the zero-page for reads </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> vma中的页是只读的的情况，因为是匿名页，又是只读的，不会是代码段，这里执行成功则直接设置页表项pte，不会进行反向映射 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (!(flags &amp;<span style="color: #000000;"> FAULT_FLAG_WRITE)) {
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 创建pte页表项，这个pte会指向内核中一个默认的全是0的页框，并且会有vma-&gt;vm_page_prot中的标志，最后会加上_PAGE_SPECIAL标志 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        entry </span>=<span style="color: #000000;"> pte_mkspecial(pfn_pte(my_zero_pfn(address),
+                        vma</span>-&gt;<span style="color: #000000;">vm_page_prot));
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 当(NR_CPUS &gt;= CONFIG_SPLIT_PTLOCK_CPUS)并且配置了USE_SPLIT_PTE_PTLOCKS时，对pmd所在的页上锁(锁是页描述符的ptl)
+         * 否则对整个页表上锁，锁是mm-&gt;page_table_lock
+         * 并再次获取address对应的页表项，有可能在其他核上被修改?
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        page_table </span>= pte_offset_map_lock(mm, pmd, address, &amp;<span style="color: #000000;">ptl);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果页表项不为空，则说明这页曾经被该进程访问过，可能其他核上更改了此页表项 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (!pte_none(*<span style="color: #000000;">page_table))
+            </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> unlock;
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> setpte;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Allocate our own private page. </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 为vma准备反向映射条件 
+     * 检查此vma能与前后的vma进行合并吗，如果可以，则使用能够合并的那个vma的anon_vma，如果不能够合并，则申请一个空闲的anon_vma
+      * 新建一个anon_vma_chain
+      * 将avc-&gt;anon_vma指向获得的vma(这个vma可能是新申请的空闲的anon_vma，也可能是获取到的可以合并的vma的anon_vma)，avc-&gt;vma指向vma，并把avc加入到vma的anon_vma_chain中
+      </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span><span style="color: #000000;"> (unlikely(anon_vma_prepare(vma)))
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> oom;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 从高端内存区的伙伴系统中获取一个页，这个页会清0 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    page </span>=<span style="color: #000000;"> alloc_zeroed_user_highpage_movable(vma, address);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配不成功 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (!<span style="color: #000000;">page)
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> oom;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 设置此页的PG_uptodate标志，表示此页是最新的 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    __SetPageUptodate(page);
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 更新memcg中的计数，如果超过了memcg中的限制值，则会把这个页释放掉，并返回VM_FAULT_OOM </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (mem_cgroup_try_charge(page, mm, GFP_KERNEL, &amp;<span style="color: #000000;">memcg))
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> oom_free_page;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 根据vma的页参数，创建一个页表项 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    entry </span>= mk_pte(page, vma-&gt;<span style="color: #000000;">vm_page_prot);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果vma区是可写的，则给页表项添加允许写标志 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (vma-&gt;vm_flags &amp;<span style="color: #000000;"> VM_WRITE)
+        entry </span>=<span style="color: #000000;"> pte_mkwrite(pte_mkdirty(entry));
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 并再次获取address对应的页表项，并且上锁，锁可能在页中间目录对应的struct page的ptl中，也可能是mm_struct的page_table_lock
+     * 因为需要修改，所以要上锁，而只读的情况是不需要上锁的
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    page_table </span>= pte_offset_map_lock(mm, pmd, address, &amp;<span style="color: #000000;">ptl);
+    </span><span style="color: #0000ff;">if</span> (!pte_none(*<span style="color: #000000;">page_table))
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> release;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 增加mm_struct中匿名页的统计计数 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    inc_mm_counter_fast(mm, MM_ANONPAGES);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对这个新页进行反向映射 
+     * 主要工作是:
+     * 设置此页的_mapcount = 0，说明此页正在使用，但是是非共享的(&gt;0是共享)
+     * 统计
+     * 设置page-&gt;mapping最低位为1
+     * page-&gt;mapping指向此vma-&gt;anon_vma
+     * page-&gt;index存放此page在vma中的第几页
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    page_add_new_anon_rmap(page, vma, address);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 提交memcg中的统计 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mem_cgroup_commit_charge(page, memcg, </span><span style="color: #0000ff;">false</span><span style="color: #000000;">);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 通过判断，将页加入到活动lru缓存或者不能换出页的lru链表 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    lru_cache_add_active_or_unevictable(page, vma);
+setpte:
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将上面配置好的页表项写入页表 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    set_pte_at(mm, address, page_table, entry);
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> No need to invalidate - it was non-present before </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 让mmu更新页表项，应该会清除tlb </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    update_mmu_cache(vma, address, page_table);
+unlock:
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 解锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pte_unmap_unlock(page_table, ptl);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 以下是错误处理 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+release:
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 取消此page在memcg中的计数，这里处理会在mem_cgroup_commit_charge()之前 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mem_cgroup_cancel_charge(page, memcg);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将此页释放到每CPU页高速缓存中 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    page_cache_release(page);
+    </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> unlock;
+oom_free_page:
+    page_cache_release(page);
+oom:
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> VM_FAULT_OOM;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　这里面流程很简单：</p>
+<ol>
+<li>调用anon_vma_prepare()获取一个anon_vma结构，这个结构可能属于此vma，也可能属于此vma能够合并的前后一个vma</li>
+<li>通过伙伴系统分配一个页(在32位上，会优先从高端内存分配)</li>
+<li>根据vma默认页表项参数vm_page_prot创建一个页表项，这个页表项用于加入到address对应的页表中</li>
+<li>调用page_add_new_anon_rmap()给此page添加一个反向映射</li>
+<li>将页表项和页表还有此页进行关联，由于页表已经在调用前分配好页了，只需要将页表项与新匿名页进行关联，然后将设置好的页表项写入address在此页表中的偏移地址即可。</li>
+</ol>
+<p>　　着重看anon_vma_prepare()和page_add_new_anon_rmap()这两个函数，我们先看page_add_new_anon_rmap()函数，这个函数比较固定和简单：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 对一个新页进行反向映射
+ * page: 目标页
+ * vma: 访问此页的vma
+ * address: 线性地址
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">void</span> page_add_new_anon_rmap(<span style="color: #0000ff;">struct</span> page *<span style="color: #000000;">page,
+    </span><span style="color: #0000ff;">struct</span> vm_area_struct *vma, unsigned <span style="color: #0000ff;">long</span><span style="color: #000000;"> address)
+{
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 地址必须处于vma中 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    VM_BUG_ON_VMA(address </span>&lt; vma-&gt;vm_start || address &gt;= vma-&gt;<span style="color: #000000;">vm_end, vma);
+    
+    SetPageSwapBacked(page);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 设置此页的_mapcount = 0，说明此页正在使用，但是是非共享的(&gt;0是共享) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    atomic_set(</span>&amp;page-&gt;_mapcount, <span style="color: #800080;">0</span>); <span style="color: #008000;">/*</span><span style="color: #008000;"> increment count (starts at -1) </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 如果是透明大页 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span><span style="color: #000000;"> (PageTransHuge(page))
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 统计 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        __inc_zone_page_state(page, NR_ANON_TRANSPARENT_HUGEPAGES);
+    __mod_zone_page_state(page_zone(page), NR_ANON_PAGES,
+            hpage_nr_pages(page));
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 进行反向映射
+     * 设置page-&gt;mapping最低位为1
+     * page-&gt;mapping指向此vma-&gt;anon_vma
+     * page-&gt;index存放此page在vma中的虚拟页框号，计算方法：page-&gt;index = ((address - vma-&gt;vm_start) &gt;&gt; PAGE_SHIFT) + vma-&gt;vm_pgoff;
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    __page_set_anon_rmap(page, vma, address, </span><span style="color: #800080;">1</span><span style="color: #000000;">);
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　主要记住，如果页为匿名页并且是一个新页(没有进行过映射到进程)，页描述符的mapping会指向第一次访问它的vma的anon_vma。并且page-&gt;index的计算公式需要记住，它等于第一次映射这个页的vma的起始虚拟页框号(vma-&gt;vm_pgoff)加上address相对于vma起始地址的页框偏移量，其实也就等于page映射到的vma所在进程地址空间的虚拟页框号。</p>
+<p>　　主要看anon_vma_prepare()，在这个函数中，首先会检查此vma有没有anon_vma，其次会检查此vma能否与前后的vma进行合并，如果可以合并，则只创建一个anon_vma_chain做一定的关联，否则会创建一个anon_vma和一个anon_vma_chain进行一定的关联，先看代码：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 为vma准备反向映射条件 
+ * 检查此vma能与前后的vma进行合并吗，如果可以，则使用能够合并的那个vma的anon_vma，如果不能够合并，则申请一个空闲的anon_vma
+ * 创建一个新的anon_vma_chain
+ * 将avc-&gt;anon_vma指向获得的vma(此vma可能是新建的，也可能是可以合并的vma的anon_vma)，avc-&gt;vma指向vma，并把avc加入到vma的anon_vma_chain中
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">int</span> anon_vma_prepare(<span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma)
+{
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取vma的反向映射的anon_vma结构 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">struct</span> anon_vma *anon_vma = vma-&gt;<span style="color: #000000;">anon_vma;
+    </span><span style="color: #0000ff;">struct</span> anon_vma_chain *<span style="color: #000000;">avc;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 检查是否需要睡眠 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    might_sleep();
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果此vma的anon_vma为空，则进行以下处理 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (unlikely(!<span style="color: #000000;">anon_vma)) {
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取vma所属的mm </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">struct</span> mm_struct *mm = vma-&gt;<span style="color: #000000;">vm_mm;
+        </span><span style="color: #0000ff;">struct</span> anon_vma *<span style="color: #000000;">allocated;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 通过slab/slub分配一个struct anon_vma_chain </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        avc </span>=<span style="color: #000000;"> anon_vma_chain_alloc(GFP_KERNEL);
+        </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">avc)
+            </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> out_enomem;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 检查vma能否与其前/后vma进行合并，如果可以，则返回能够合并的那个vma的anon_vma，如果不可以，返回NULL
+         * 主要检查vma前后的vma是否连在一起(vma-&gt;vm_end == 前/后vma-&gt;vm_start)
+         * vma-&gt;vm_policy和前/后vma-&gt;vm_policy
+         * 是否都为文件映射，除了(VM_READ|VM_WRITE|VM_EXEC|VM_SOFTDIRTY)其他标志位是否相同，如果为文件映射，前/后vma映射的文件位置是否正好等于vma映射的文件 + vma的长度
+         * 这里有个疑问，为什么匿名线性区会有vm_file不为空的时候，我也没找到原因
+         * 可以合并，则返回可合并的线性区的anon_vma
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        anon_vma </span>=<span style="color: #000000;"> find_mergeable_anon_vma(vma);
+        allocated </span>=<span style="color: #000000;"> NULL;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> anon_vma为空，也就是vma不能与前后的vma合并，则会分配一个 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #000000;">anon_vma) {
+            
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 从anon_vma_cachep这个slab中分配一个anon_vma结构，将其refcount设为1，anon_vma-&gt;root指向本身 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            anon_vma </span>=<span style="color: #000000;"> anon_vma_alloc();
+            </span><span style="color: #0000ff;">if</span> (unlikely(!<span style="color: #000000;">anon_vma))
+                </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> out_enomem_free_avc;
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 刚分配好的anon_vma存放在allocated </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            allocated </span>=<span style="color: #000000;"> anon_vma;
+        }
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 到这里，anon_vma有可能是可以合并的vma的anon_vma，也有可能是刚分配的anon_vma </span><span style="color: #008000;">*/</span>
+        
+        <span style="color: #008000;">/*</span><span style="color: #008000;"> 对anon_vma-&gt;root-&gt;rwsem上写锁，如果是新分配的anon_vma则是其本身的rwsem </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        anon_vma_lock_write(anon_vma);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> page_table_lock to protect against threads </span><span style="color: #008000;">*/</span>
+        <span style="color: #008000;">/*</span><span style="color: #008000;"> 获取当前进程的线性区锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        spin_lock(</span>&amp;mm-&gt;<span style="color: #000000;">page_table_lock);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果vma-&gt;anon_vma为空，这是很可能发生的，因为此函数开头获取的anon_vma为空才会走到这条代码路径上 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (likely(!vma-&gt;<span style="color: #000000;">anon_vma)) {
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将vma-&gt;anon_vma设置为新分配的anon_vma，这个anon_vma也可能是前后能够合并的vma的anon_vma </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            vma</span>-&gt;anon_vma =<span style="color: #000000;"> anon_vma;
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;">
+             * avc-&gt;vma = vma
+             * avc-&gt;anon_vma = anon_vma(这个可能是当前vma的anon_vma，也可能是前后可合并vma的anon_vma)
+             * 将新的avc-&gt;same_vma加入到vma的anon_vma_chain链表中
+             * 将新的avc-&gt;rb加入到anon_vma的红黑树中
+             </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            anon_vma_chain_link(vma, avc, anon_vma);
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 这两个置空，后面就不会释放掉 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            allocated </span>=<span style="color: #000000;"> NULL;
+            avc </span>=<span style="color: #000000;"> NULL;
+        }
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> mm的页表的锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        spin_unlock(</span>&amp;mm-&gt;<span style="color: #000000;">page_table_lock);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 释放anon_vma的写锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        anon_vma_unlock_write(anon_vma);
+
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (unlikely(allocated))
+            put_anon_vma(allocated);
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (unlikely(avc))
+            anon_vma_chain_free(avc);
+    }
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+
+ out_enomem_free_avc:
+    anon_vma_chain_free(avc);
+ out_enomem:
+    </span><span style="color: #0000ff;">return</span> -<span style="color: #000000;">ENOMEM;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　我们画图描述两种情况最后生成的结果：</p>
+<p>　　这种是此vma没有与其前后的vma进行合并：</p>
+<p style="text-align: justify;"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418140101960-1154614445.png" alt=""></p>
+<p>　　可以看出，当一个新的vma不能与前后相似vma进行合并是，会为此新vma创建专属的anon_vma和一个anon_vma_chain结构，然后将anon_vma_chain链入这个新的vma的anon_vma_chain链表中，并且加入到这个新的vma的anon_vma的红黑树中。而之后再次访问此vma中不属于已经映射好的页的其他地址时，就不需要再次为此vma创建anon_vma和anon_vma_chain结构了。</p>
+<p>　　而另一种情况，是此vma能与前后的vma进行合并，系统就不会为此vma创建anon_vma，而是这两个vma共用一个anon_vma，但是会创建一个anon_vma_chain，如下：</p>
+<p style="text-align: justify;"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418140120445-637686463.png" alt=""></p>
+<p>&nbsp;　　这种情况，如果新的vma能够与前后相似vma进行合并，则不会为这个新的vma创建anon_vma结构，而是将此新的vma的anon_vma指向能够合并的那个vma的anon_vma。不过内核会为这个新的vma建立一个anon_vma_chain，链入这个新的vma中，并加入到新的vma所指的anon_vma的红黑树中。在这种情况中，匿名页的反向映射就能够找到新的vma，看到文章最后就会明白。好的，到这里，建立一个新的匿名线性区并且访问它的地址空间的逻辑已经理清，先别急着看懂这个图，现在看很难理解，慢慢往后面看，就会明白anon_vma和anon_vma_chain为什么要这样组织起来。</p>
+<p>&nbsp;</p>
+<h1>父子进程的匿名线性区关系</h1>
+<p>　　一些映射了相同匿名页的匿名线性区，它们的关系是怎么样的，首先，匿名线性区只有三种，堆、栈、mmap私有匿名映射，而我们知道，在fork过程中，子进程会拷贝父进程的vma(除了标记有VM_DONTCOPY的vma)和这些vma对应的页表项，即使这些vma是非共享的(如堆、栈)，fork也会这样拷贝。这样做的原因是为了效率和降低内存的使用率。而之后，内核会使用写时复制技术，即使那些vma映射的页是共享的，当父进程或子进程对这些中的某个页进行写入时，内核会拷贝一份这个页的副本，并覆盖掉原先这个页所映射的页表项，这样就会隔离出来了。当然，父子进程对还没映射的页进行访问时，都是映射各自的页表，比如：父进程的匿名线性区vma的线性地址区间是0~8k，已经映射了4k~8k的区域，0~4k的区域没有映射。此时父进程fork了一个子进程，此子进程的此vma也是映射了4k~8k的区域，0~4k区域没有映射，当子进程访问0~4k这段地址时，内核会分配一个页，把这个页映射子进程页表中到0~4k这段地址对应的页表项，并不会映射到父进程的页表中。</p>
+<p>　　所以，在fork完之后，内核需要能够通过页框，找到映射了此页的vma和进程，这里就需要了解在fork时，怎么组织父子进程的匿名线性区反向映射的结构anon_vma和anon_vma_chain。，这些代码主要都处于fork路径中的dup_mm()函数里，在这个函数中，会以父进程的mm_struct为标准，初始化子进程的mm_struct。然后遍历父进程的所有vma，在遍历父进程的所有vma过程中，为每个父进程的匿名线性区建立一个子进程对应的匿名线性区vma、一个anon_vma和一个或多个anon_vma_chain。并将它们建立关系，然后子进程页表对这些vma映射的页建立关系。特别是对可写vma的处理时，会将vma对应父子进程的页表项都设置为只读，具体详细看代码：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 
+ * mm: 子进程的mm_struct
+ * oldmm: 父进程的mm_struct
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">static</span> <span style="color: #0000ff;">int</span> dup_mmap(<span style="color: #0000ff;">struct</span> mm_struct *mm, <span style="color: #0000ff;">struct</span> mm_struct *<span style="color: #000000;">oldmm)
+{
+    </span><span style="color: #0000ff;">struct</span> vm_area_struct *mpnt, *tmp, *prev, **<span style="color: #000000;">pprev;
+    </span><span style="color: #0000ff;">struct</span> rb_node **rb_link, *<span style="color: #000000;">rb_parent;
+    </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> retval;
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> charge;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取每CPU的dup_mmap_sem这个读写信号量的读锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    uprobe_start_dup_mmap();
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取父进程的mm-&gt;mmap_sem的写锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    down_write(</span>&amp;oldmm-&gt;<span style="color: #000000;">mmap_sem);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 这里x86下为空 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    flush_cache_dup_mm(oldmm);
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果父进程的mm_struct的flags设置了MMF_HAS_UPROBES，则子进程的mm_struct的flags设置MMF_HAS_UPROBES和MMF_RECALC_UPROBES </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    uprobe_dup_mmap(oldmm, mm);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;">
+     * Not linked in yet - no deadlock potential:
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 获取子进程的mmap_sem，后面SINGLE_DEPTH_NESTING意思需要查查 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    down_write_nested(</span>&amp;mm-&gt;<span style="color: #000000;">mmap_sem, SINGLE_DEPTH_NESTING);
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 复制父进程进程地址空间的大小(页框数)到子进程的mm </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mm</span>-&gt;total_vm = oldmm-&gt;<span style="color: #000000;">total_vm;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 复制父进程共享文件内存映射中的页数量到子进程mm </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mm</span>-&gt;shared_vm = oldmm-&gt;<span style="color: #000000;">shared_vm;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 复制父进程可执行内存映射中的页数量到子进程的mm </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mm</span>-&gt;exec_vm = oldmm-&gt;<span style="color: #000000;">exec_vm;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 复制父进程用户态堆栈的页数量到子进程的mm </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    mm</span>-&gt;stack_vm = oldmm-&gt;<span style="color: #000000;">stack_vm;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 子进程vma红黑树的根结点，保存到rb_link中 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    rb_link </span>= &amp;mm-&gt;<span style="color: #000000;">mm_rb.rb_node;
+    rb_parent </span>=<span style="color: #000000;"> NULL;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取指向线性区对象的链表头，链表是经过排序的，按线性地址升序排列，但是mmap并不是list_head结构，是一个struct vm_area_struct指针，这里由于子进程的mm是刚创建的，mm-&gt;map为空，而pprev是一个指向指针的指针 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pprev </span>= &amp;mm-&gt;<span style="color: #000000;">mmap;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 暂时不看，与ksm有关 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    retval </span>=<span style="color: #000000;"> ksm_fork(mm, oldmm);
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (retval)
+        </span><span style="color: #0000ff;">goto</span> <span style="color: #0000ff;">out</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 也暂时不看 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    retval </span>=<span style="color: #000000;"> khugepaged_fork(mm, oldmm);
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (retval)
+        </span><span style="color: #0000ff;">goto</span> <span style="color: #0000ff;">out</span><span style="color: #000000;">;
+
+    prev </span>=<span style="color: #000000;"> NULL;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 遍历父进程所有vma，通过mm-&gt;mmap链表遍历 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">for</span> (mpnt = oldmm-&gt;mmap; mpnt; mpnt = mpnt-&gt;<span style="color: #000000;">vm_next) {
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> mpnt指向父进程的一个vma </span><span style="color: #008000;">*/</span>
+        
+        <span style="color: #0000ff;">struct</span> file *<span style="color: #000000;">file;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 父进程的此vma标记了不复制 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (mpnt-&gt;vm_flags &amp;<span style="color: #000000;"> VM_DONTCOPY) {
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 做统计，因为上面把父进程的total_vm、shared_vm、exec_vm、stack_vm都复制过来了，这些等于父进程所有vma的页的总和，这里这个vma不复制，要相应减掉此vma的页数量 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            vm_stat_account(mm, mpnt</span>-&gt;vm_flags, mpnt-&gt;<span style="color: #000000;">vm_file,
+                            </span>-<span style="color: #000000;">vma_pages(mpnt));
+            </span><span style="color: #0000ff;">continue</span><span style="color: #000000;">;
+        }
+        charge </span>= <span style="color: #800080;">0</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 此vma要求需要检查是否有足够的空闲内存用于映射 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (mpnt-&gt;vm_flags &amp;<span style="color: #000000;"> VM_ACCOUNT) {
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 此vma的页数量, (mpnt-&gt;vm_end - mpnt-&gt;vm_start) &gt;&gt; PAGE_SHIFT </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            unsigned </span><span style="color: #0000ff;">long</span> len =<span style="color: #000000;"> vma_pages(mpnt);
+
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 安全检查，是否有足够的内存 </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">if</span> (security_vm_enough_memory_mm(oldmm, len)) <span style="color: #008000;">/*</span><span style="color: #008000;"> sic </span><span style="color: #008000;">*/</span>
+                <span style="color: #0000ff;">goto</span><span style="color: #000000;"> fail_nomem;
+            charge </span>=<span style="color: #000000;"> len;
+        }
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配一个vma结构体用于子进程使用 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        tmp </span>=<span style="color: #000000;"> kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配失败 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (!<span style="color: #000000;">tmp)
+            </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> fail_nomem;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 直接复制父进程的vma的数据到子进程的vma </span><span style="color: #008000;">*/</span>
+        *tmp = *<span style="color: #000000;">mpnt;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 初始化子进程新的vma的anon_vma_chain为空 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        INIT_LIST_HEAD(</span>&amp;tmp-&gt;<span style="color: #000000;">anon_vma_chain);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 视情况复制父进程vma的权限，非vm_flags </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        retval </span>=<span style="color: #000000;"> vma_dup_policy(mpnt, tmp);
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (retval)
+            </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> fail_nomem_policy;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将子进程新的vma的vm_mm指向子进程的mm </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        tmp</span>-&gt;vm_mm =<span style="color: #000000;"> mm;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对父子进程的anon_vma和anon_vma_chain进行处理 
+         * 如果父进程的此vma没有anon_vma，直接返回，vma用于映射文件应该会没有anon_vma
+         </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (anon_vma_fork(tmp, mpnt))
+            </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> fail_nomem_anon_vma_fork;
+        tmp</span>-&gt;vm_flags &amp;= ~<span style="color: #000000;">VM_LOCKED;
+        tmp</span>-&gt;vm_next = tmp-&gt;vm_prev =<span style="color: #000000;"> NULL;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取vma所映射的文件，如果是匿名映射区，则为空 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        file </span>= tmp-&gt;<span style="color: #000000;">vm_file;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果此vma是映射文件使用 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (file) {
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 文件对应的inode </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">struct</span> inode *inode =<span style="color: #000000;"> file_inode(file);
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 文件inode对应的address_space </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">struct</span> address_space *mapping = file-&gt;<span style="color: #000000;">f_mapping;
+
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 增加file的引用计数 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            get_file(file);
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果此vma区被禁止写此文件，则减少文件对应inode的写进程的引用次数 </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">if</span> (tmp-&gt;vm_flags &amp;<span style="color: #000000;"> VM_DENYWRITE)
+                atomic_dec(</span>&amp;inode-&gt;<span style="color: #000000;">i_writecount);
+            mutex_lock(</span>&amp;mapping-&gt;<span style="color: #000000;">i_mmap_mutex);
+            </span><span style="color: #0000ff;">if</span> (tmp-&gt;vm_flags &amp;<span style="color: #000000;"> VM_SHARED)
+                atomic_inc(</span>&amp;mapping-&gt;<span style="color: #000000;">i_mmap_writable);
+            flush_dcache_mmap_lock(mapping);
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> insert tmp into the share list, just after mpnt </span><span style="color: #008000;">*/</span>
+            <span style="color: #0000ff;">if</span> (unlikely(tmp-&gt;vm_flags &amp;<span style="color: #000000;"> VM_NONLINEAR))
+                vma_nonlinear_insert(tmp,
+                        </span>&amp;mapping-&gt;<span style="color: #000000;">i_mmap_nonlinear);
+            </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+                vma_interval_tree_insert_after(tmp, mpnt,
+                            </span>&amp;mapping-&gt;<span style="color: #000000;">i_mmap);
+            flush_dcache_mmap_unlock(mapping);
+            mutex_unlock(</span>&amp;mapping-&gt;<span style="color: #000000;">i_mmap_mutex);
+        }
+</span>
+        <span style="color: #008000;">/*</span><span style="color: #008000;"> 此vma用于映射hugetlbfs中的大页的情况 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (is_vm_hugetlb_page(tmp))
+            reset_vma_resv_huge_pages(tmp);
+</span>
+        <span style="color: #008000;">/*</span><span style="color: #008000;"> pprev是指向子进程的mm-&gt;mmap(用于vma排序存放的链表) 
+         * 第一次循环时将子进程的mm-&gt;mmap指向tmp
+         * 后面的循环将前一个vma的vm_next指向当前mva
+         </span><span style="color: #008000;">*/</span>
+        *pprev =<span style="color: #000000;"> tmp;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 虽然到这来tmp-&gt;vm_next，但是pprev指向tmp-&gt;vm_next，结合上面的*pprev = tmp，可以起到下次循环将tmp-&gt;vm_next指向tmp的作用 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        pprev </span>= &amp;tmp-&gt;<span style="color: #000000;">vm_next;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> tmp的前一个vma是prev </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        tmp</span>-&gt;vm_prev =<span style="color: #000000;"> prev;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将tmp作为prev </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        prev </span>=<span style="color: #000000;"> tmp;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将vma加入到mm的mm_rb这个vma红黑树中 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        __vma_link_rb(mm, tmp, rb_link, rb_parent);
+        rb_link </span>= &amp;tmp-&gt;<span style="color: #000000;">vm_rb.rb_right;
+        rb_parent </span>= &amp;tmp-&gt;<span style="color: #000000;">vm_rb;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 子进程mm的线性区个数++ </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        mm</span>-&gt;map_count++<span style="color: #000000;">;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 做页表的复制
+         * 将父进程的vma对应的开始地址到结束地址这段地址的页表复制到子进程中
+         * 如果这段vma有可能会进行写时复制(vma可写，并且不是共享的VM_SHARED)，那就会对子进程和父进程的页表项都设置为映射的页是只读的(vma中权限是可写)，这样写时会发生缺页异常，在缺页异常中做写时复制 
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        retval </span>=<span style="color: #000000;"> copy_page_range(mm, oldmm, mpnt);
+
+        </span><span style="color: #0000ff;">if</span> (tmp-&gt;vm_ops &amp;&amp; tmp-&gt;vm_ops-&gt;<span style="color: #000000;">open)
+            tmp</span>-&gt;vm_ops-&gt;<span style="color: #000000;">open(tmp);
+
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (retval)
+            </span><span style="color: #0000ff;">goto</span> <span style="color: #0000ff;">out</span><span style="color: #000000;">;
+    }
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> a new mm has just been created </span><span style="color: #008000;">*/</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 与体系架构相关的dup_mmap处理 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    arch_dup_mmap(oldmm, mm);
+    retval </span>= <span style="color: #800080;">0</span><span style="color: #000000;">;
+</span><span style="color: #0000ff;">out</span><span style="color: #000000;">:
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 释放子进程mm-&gt;mmap_sem这个读写信号量的写锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    up_write(</span>&amp;mm-&gt;<span style="color: #000000;">mmap_sem);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 刷新父进程的页表tlb </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    flush_tlb_mm(oldmm);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 释放父进程mm-&gt;mmap_sem这个读写信号量的写锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    up_write(</span>&amp;oldmm-&gt;<span style="color: #000000;">mmap_sem);
+    uprobe_end_dup_mmap();
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> retval;
+fail_nomem_anon_vma_fork:
+    mpol_put(vma_policy(tmp));
+fail_nomem_policy:
+    kmem_cache_free(vm_area_cachep, tmp);
+fail_nomem:
+    retval </span>= -<span style="color: #000000;">ENOMEM;
+    vm_unacct_memory(charge);
+    </span><span style="color: #0000ff;">goto</span> <span style="color: #0000ff;">out</span><span style="color: #000000;">;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　在dup_mm()中会对父进程的所有vma进行复制到子进程的操作，由于我们只看匿名线性区，并且只需要分析一个，这里我们就主要看匿名线性区会做什么操作，可以看出来，对于匿名线性区的处理，dup_mm中一个最重要的函数就是anon_vma_fork()，在anon_vma_fork()中，首先判断传入的父进程是否有anon_vma，然后调用anon_vma_clone()处理，之后会为子进程的vma创建一个anon_vma和anon_vma_chain，之后再对这两个结构进行处理：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> vma为子进程的vma，pvma为父进程的vma，如果父进程的此vma没有anon_vma，直接返回 </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">int</span> anon_vma_fork(<span style="color: #0000ff;">struct</span> vm_area_struct *vma, <span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">pvma)
+{
+    </span><span style="color: #0000ff;">struct</span> anon_vma_chain *<span style="color: #000000;">avc;
+    </span><span style="color: #0000ff;">struct</span> anon_vma *<span style="color: #000000;">anon_vma;
+    </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> error;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 父进程的此vma没有anon_vma，直接返回 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (!pvma-&gt;<span style="color: #000000;">anon_vma)
+        </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 这里开始先检查父进程的此vma是否有anon_vma，有则继续，而上面进行了判断，只有父进程的此vma有anon_vma才会执行到这里
+     * 这里会遍历父进程的vma的anon_vma_chain链表，对每个结点新建一个anon_vma_chain，然后
+     * 设置新的avc-&gt;vma指向子进程的vma
+     * 设置新的avc-&gt;anon_vma指向父进程anon_vma_chain结点指向的anon_vma(这个anon_vma不一定属于父进程)
+     * 将新的avc-&gt;same_vma加入到子进程的anon_vma_chain链表中
+     * 将新的avc-&gt;rb加入到父进程anon_vma_chain结点指向的anon_vma
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    error </span>=<span style="color: #000000;"> anon_vma_clone(vma, pvma);
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (error)
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> error;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 分配一个anon_vma结构用于子进程，将其refcount设为1，anon_vma-&gt;root指向本身
+     * 即使此vma是用于映射文件的，也会分配一个anon_vma
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    anon_vma </span>=<span style="color: #000000;"> anon_vma_alloc();
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">anon_vma)
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> out_error;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配一个struct anon_vma_chain结构 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    avc </span>=<span style="color: #000000;"> anon_vma_chain_alloc(GFP_KERNEL);
+    </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">avc)
+        </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> out_error_free_anon_vma;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 将新的anon_vma的root指向父进程的anon_vma的root </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    anon_vma</span>-&gt;root = pvma-&gt;anon_vma-&gt;<span style="color: #000000;">root;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 对父进程与子进程的anon_vma共同的root的refcount进行+1 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    get_anon_vma(anon_vma</span>-&gt;<span style="color: #000000;">root);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> Mark this anon_vma as the one where our new (COWed) pages go. </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    vma</span>-&gt;anon_vma =<span style="color: #000000;"> anon_vma;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对这个新的anon_vma上锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    anon_vma_lock_write(anon_vma);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 新的avc的vma指向子进程的vma
+     * 新的avc的anon_vma指向子进程vma的anon_vma
+     * 新的avc的same_vma加入到子进程vma的anon_vma_chain链表的头部
+     * 新的avc的rb加入到子进程vma的anon_vma的红黑树中
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    anon_vma_chain_link(vma, avc, anon_vma);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对这个anon_vma解锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    anon_vma_unlock_write(anon_vma);
+
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+
+ out_error_free_anon_vma:
+    put_anon_vma(anon_vma);
+ out_error:
+    unlink_anon_vmas(vma);
+    </span><span style="color: #0000ff;">return</span> -<span style="color: #000000;">ENOMEM;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　我们再看看anon_vma_clone():</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> dst为子进程的vma，src为父进程的vma </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">int</span> anon_vma_clone(<span style="color: #0000ff;">struct</span> vm_area_struct *dst, <span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">src)
+{
+    </span><span style="color: #0000ff;">struct</span> anon_vma_chain *avc, *<span style="color: #000000;">pavc;
+    </span><span style="color: #0000ff;">struct</span> anon_vma *root =<span style="color: #000000;"> NULL;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 遍历父进程的每个anon_vma_chain链表中的结点，保存在pavc中 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    list_for_each_entry_reverse(pavc, </span>&amp;src-&gt;<span style="color: #000000;">anon_vma_chain, same_vma) {
+        </span><span style="color: #0000ff;">struct</span> anon_vma *<span style="color: #000000;">anon_vma;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 分配一个新的avc结构 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        avc </span>= anon_vma_chain_alloc(GFP_NOWAIT |<span style="color: #000000;"> __GFP_NOWARN);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果分配失败 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span> (unlikely(!<span style="color: #000000;">avc)) {
+            unlock_anon_vma_root(root);
+            root </span>=<span style="color: #000000;"> NULL;
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 再次分配，一定要分配成功 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            avc </span>=<span style="color: #000000;"> anon_vma_chain_alloc(GFP_KERNEL);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">avc)
+                </span><span style="color: #0000ff;">goto</span><span style="color: #000000;"> enomem_failure;
+        }
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取父结点的pavc指向的anon_vma </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        anon_vma </span>= pavc-&gt;<span style="color: #000000;">anon_vma;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对anon_vma的root上锁
+         * 如果root != anon_vma-&gt;root，则对root上锁，并返回anon_vma-&gt;root
+         * 第一次循环，root = NULL
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        root </span>=<span style="color: #000000;"> lock_anon_vma_root(root, anon_vma);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 
+         * 设置新的avc-&gt;vma指向子进程的vma
+         * 设置新的avc-&gt;anon_vma指向父进程anon_vma_chain结点指向的anon_vma(这个anon_vma不一定属于父进程)
+         * 将新的avc-&gt;same_vma加入到子进程的anon_vma_chain链表头部
+         * 将新的avc-&gt;rb加入到父进程anon_vma_chain结点指向的anon_vma
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        anon_vma_chain_link(dst, avc, anon_vma);
+    }
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 释放根的锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unlock_anon_vma_root(root);
+    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+
+ enomem_failure:
+    unlink_anon_vmas(dst);
+    </span><span style="color: #0000ff;">return</span> -<span style="color: #000000;">ENOMEM;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　在调用完anon_vma_clone()结束后，整个结构会如下图：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141255710-320023448.png" alt=""></p>
+<p>　　这张图是在anon_vma_fork()中调用anon_vma_clone()结束后父子进程匿名线性区的关系图，可以看出anon_vma_clone()做的工作只是创建了一个anon_vma_chain结构用于链入到子进程(因为父进程只有一个anon_vma_chain)，并且加入到父进程的anon_vma红黑树中。需要注意，这里是因为父进程只有一个anon_vma_chain，所以才为子进程创建一个anon_vma_chain，如果父进程有N个anon_vma_chain，这里也会为子进程创建N个anon_vma_chain。同一条链上有多个anon_vma_chain，那么它们所属的vma是相同的，只是加入到的anon_vma的红黑树不同，之后会看到。</p>
+<p>　　再看看anon_vma_clone()之后进行的处理，如下：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141311523-923497514.png" alt=""></p>
+<p>　　可以看到，子进程的anon_vma的root指向了父进程的anon_vma，并且父进程的anon_vma的refcount++。这时候父进程p1有一个anon_vma_chain，而子进程p2有两个anon_vma_chain，子进程这两个anon_vma_chain分别加入了父进程anon_vma的红黑树和子进程anon_vma的红黑树，但是这两个anon_vma_chain都是属于子进程p2的。我们看看父进程的红黑树，里面现在有两个anon_vma_chain，一个是父进程自己的，一个是子进程的，这样已经映射好的页就可以通过父进程的anon_vma的红黑树分别访问到父进程和子进程。</p>
+<p>　　整个过程完成之后，最终结构如此图，但是即使到这里，子进程对这些已经映射的页还是不能访问的，原因是还没有为这些vma映射好的页建立页表，这个工作在dup_mm()对父进程每个vma遍历的最后的copy_page_range()函数，此函数如下：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #0000ff;">int</span> copy_page_range(<span style="color: #0000ff;">struct</span> mm_struct *dst_mm, <span style="color: #0000ff;">struct</span> mm_struct *<span style="color: #000000;">src_mm,
+        </span><span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma)
+{
+    pgd_t </span>*src_pgd, *<span style="color: #000000;">dst_pgd;
+    unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> next;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 开始地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> addr = vma-&gt;<span style="color: #000000;">vm_start;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 结束地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> end = vma-&gt;<span style="color: #000000;">vm_end;
+    unsigned </span><span style="color: #0000ff;">long</span> mmun_start;    <span style="color: #008000;">/*</span><span style="color: #008000;"> For mmu_notifiers </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    unsigned </span><span style="color: #0000ff;">long</span> mmun_end;        <span style="color: #008000;">/*</span><span style="color: #008000;"> For mmu_notifiers </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">bool</span><span style="color: #000000;"> is_cow;
+    </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> ret;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 这里只会处理匿名线性区或者包含有(VM_HUGETLB | VM_NONLINEAR | VM_PFNMAP | VM_MIXEDMAP)这几种标志的vma </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (!(vma-&gt;vm_flags &amp; (VM_HUGETLB | VM_NONLINEAR |<span style="color: #000000;">
+                   VM_PFNMAP </span>|<span style="color: #000000;"> VM_MIXEDMAP))) {
+        </span><span style="color: #0000ff;">if</span> (!vma-&gt;<span style="color: #000000;">anon_vma)
+            </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;
+    }
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果是使用了hugetlbfs中的大页的情况 vma-&gt;vm_flags &amp; VM_HUGETLB </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span><span style="color: #000000;"> (is_vm_hugetlb_page(vma))
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> copy_hugetlb_page_range(dst_mm, src_mm, vma);
+
+    </span><span style="color: #0000ff;">if</span> (unlikely(vma-&gt;vm_flags &amp;<span style="color: #000000;"> VM_PFNMAP)) {</span><span style="color: #000000;">
+        ret </span>=<span style="color: #000000;"> track_pfn_copy(vma);
+        </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (ret)
+            </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> ret;
+    }
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 检查是否可能会对此vma进行写入(要求此vma是非共享vma，并且可能写入) (flags &amp; (VM_SHARED | VM_MAYWRITE)) == VM_MAYWRITE </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    is_cow </span>= is_cow_mapping(vma-&gt;<span style="color: #000000;">vm_flags);
+    mmun_start </span>=<span style="color: #000000;"> addr;
+    mmun_end   </span>=<span style="color: #000000;"> end;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 此vma可能会进行写时复制的处理 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span><span style="color: #000000;"> (is_cow)
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 如果此vma使用了mm-&gt;mmu_notifier_mm这个通知链，则初始化这个通知链，通知的地址范围是addr ~ end </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        mmu_notifier_invalidate_range_start(src_mm, mmun_start,
+                            mmun_end);
+
+    ret </span>= <span style="color: #800080;">0</span><span style="color: #000000;">;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取子进程对于开始地址对应的页全局目录项 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    dst_pgd </span>=<span style="color: #000000;"> pgd_offset(dst_mm, addr);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取父进程对于开始地址对应的页全局目录项 
+     * 实际这两项在页全局目录的偏移是一样的，只是项中的数据不同，子进程的页全局目录项是空的
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    src_pgd </span>=<span style="color: #000000;"> pgd_offset(src_mm, addr);
+    </span><span style="color: #0000ff;">do</span><span style="color: #000000;"> {
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取从addr ~ end，一个页全局目录项从addr开始能够映射到的结束地址，返回这个结束地址
+         * 循环后会将addr = next，这样下次就会从 next ~ end，一步一步以pud能映射的地址范围长度减小
+         </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        next </span>=<span style="color: #000000;"> pgd_addr_end(addr, end);
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 父进程的页全局目录项是空的的情况 </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (pgd_none_or_clear_bad(src_pgd))
+            </span><span style="color: #0000ff;">continue</span><span style="color: #000000;">;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对这个页全局目录项对应的页上级目录项进行操作
+         * 并会不停深入，直到页表项
+         * 里面的处理与这个循环几乎一致，不过会在里面判断是否要对dst_pgd的各层申请页用于页表
+         </span><span style="color: #008000;">*/</span>
+        <span style="color: #0000ff;">if</span><span style="color: #000000;"> (unlikely(copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
+                        vma, addr, next))) {
+            ret </span>= -<span style="color: #000000;">ENOMEM;
+            </span><span style="color: #0000ff;">break</span><span style="color: #000000;">;
+        }
+    } </span><span style="color: #0000ff;">while</span> (dst_pgd++, src_pgd++, addr = next, addr !=<span style="color: #000000;"> end);
+
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (is_cow)
+        mmu_notifier_invalidate_range_end(src_mm, mmun_start, mmun_end);
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> ret;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　当这个函数对vma的线性地址区间的页表项映射完成后，子进程的vma已经可以正确进行访问了。我们看看已经映射好的页框怎么通过反向映射，找到父子进程映射了此页的vma，如下：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141429320-1938357883.png" alt=""></p>
+<p>&nbsp;</p>
+<p>　　可以很清楚看出来，一个映射了的匿名页，主要通过其指向的anon_vma里的保存anon_vma_chain的红黑树进行访问各个映射了此页的vma。需要注意，这种情况只是发生在父进程映射好了这几个页之后，才创建的子进程。</p>
+<p>　　接下来看看父进程创建子进程完毕后，父子进程映射没有访问过的页时发生的情况，并看看反向映射的结果。</p>
+<p>　　首先我们先看子进程此时访问了此vma里没有被映射的线性地址，可以根据之前分析的do_anonymous_page()函数，得出如下结果：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141526460-2089677153.png" alt=""></p>
+<p>　　会将此新的页的mapping指向子进程p2的anon_vma，并且会为子进程p2建立此页的页表映射，其他并没有任何改变，我们再看看此时对新映射的页进行反向映射：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141543585-2043275761.png" alt=""></p>
+<p>　　可以清楚看出来，子进程新映射的页，通过反向映射，只能访问到子进程，不能访问的父进程，这就是为什么子进程会有两个anon_vma_chain的原因。如果此时子进程p2创建一个子进程p3，那么子进程p3的此vma就会有3个anon_vma_chain，它们都属于子进程p3的此vma，只是分别加入了祖父进程p1，父进程p2，和本身进程p3的vma的红黑树中。</p>
+<p>　　我们继续结合之前分析的do_anonymous_page()，再来看看如果是父进程映射了一个新页的情况是怎么样的：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141608195-2092644007.png" alt=""></p>
+<p>　　可以看到父进程新访问的匿名页，它的mapping指向了父进程的anon_vma，再看看父进程访问的新页进行反向映射，结果如下：</p>
+<p><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/687284-20160418141621695-716492180.png" alt=""></p>
+<p>　　发现没，一个很奇怪的问题，父进程新映射的页能够通过反向映射访问的子进程的vma，所以在反向映射时都要对遍历到的vma所属进程的页表进行检查，检查是否有映射此页，具体方法是：通过页描述符中的index(记录有此页是是vma中的虚拟页框号)，通过以下函数计算，即可获得此匿名页的起始线性地址：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #0000ff;">static</span> inline unsigned <span style="color: #0000ff;">long</span><span style="color: #000000;">
+__vma_address(</span><span style="color: #0000ff;">struct</span> page *page, <span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma)
+{
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取此页在vma所属进程地址空间的线性地址
+     * 如果是匿名线性区，page-&gt;index中保存的是此页映射到了匿名线性区中的虚拟页框号
+     </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    pgoff_t pgoff </span>=<span style="color: #000000;"> page_to_pgoff(page);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> vma-&gt;vm_pgoff保存vma起始地址所在的虚拟页框号 
+     * pgoff保存的是page在此vma的进程地址空间的虚拟页框号
+     * vma-&gt;vm_start保存的是vma的起始地址
+     </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">return</span> vma-&gt;vm_start + ((pgoff - vma-&gt;vm_pgoff) &lt;&lt;<span style="color: #000000;"> PAGE_SHIFT);
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　这样就获得了page在vma所属的进程空间的线性地址，然后通过此线性地址找到进程页表中对应的页表项，再通过检查页表项中映射的物理页框号是否与此反向映射的物理页框号相同，如果是，则说明此页表项映射了此物理页，否则说明此页表项并不是映射了此物理页，具体代码在page_check_address()，这里就不列出来了。</p>
+<p>　　回过头，我们再看看进程创建一个新的vma，然后这个vma能够与前/后的vma进行合并的情况，在这种情况中，新的vma会与能够合并的vma共用一个anon_vma，如果这个新的vma访问了一个页的时候，这个页的mapping会指向这个能够合并的vma的anon_vma，然后通过上面反向映射的步骤，通过anon_vma的红黑树找遍历链接到此的vma，发现此页并不属于能够合并的vma(因为page-&gt;index肯定不在能够合并的vma的地址区间对应的虚拟页框号区间中)，但是遍历到新的vma时就能够判断出此page是映射到了新的vma中。<strong>注意，以上所说情景的全都是基于堆和栈以及私有匿名mmap的匿名页反向映射，而共享匿名mmap共享内存(其实就是shmem)实际并不是基于匿名页反向映射的，可以说是基于文件页的反向映射的。</strong></p>
+<p>&nbsp;</p>
+<h1>关于vma是向下增长的类型(栈)</h1>
+<p>　　如上，先考虑一种理想情况，在系统中所有进程的栈大小都是足够使用的，，那么所有进程的栈的vma的开始线性地址和结束线性地址都会相同(见dup_mm())，而当某个进程的栈不够用了，需要向下扩大时，会调用expand_downwards()：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008000;">/*</span><span style="color: #008000;"> 扩大进程栈大小，进程栈向下增长的情况
+ * vma: 当前进程栈的vma
+ * address: 产生缺页异常的address，并且 address &lt; vma-&gt;vm_start 
+ </span><span style="color: #008000;">*/</span>
+<span style="color: #0000ff;">int</span> expand_downwards(<span style="color: #0000ff;">struct</span> vm_area_struct *<span style="color: #000000;">vma,
+                   unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> address)
+{
+    </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> error;
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 为vma准备反向映射条件 
+      * 检查此vma能与前后的vma进行合并吗，如果可以，则使用能够合并的那个vma的anon_vma，如果不能够合并，则申请一个空闲的anon_vma
+      * 创建一个新的anon_vma_chain
+      * 将avc-&gt;anon_vma指向获得的vma(此vma可能是新建的，也可能是可以合并的vma的anon_vma)，avc-&gt;vma指向vma，并把avc加入到vma的anon_vma_chain中
+      </span><span style="color: #008000;">*/</span>
+      <span style="color: #008000;">/*</span><span style="color: #008000;"> 如果栈已经在使用中，是栈空间不足导致需要向下增长的，那么这里基本不做任何工作，因为栈的vma已经有了anon_vma </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span><span style="color: #000000;"> (unlikely(anon_vma_prepare(vma)))
+        </span><span style="color: #0000ff;">return</span> -<span style="color: #000000;">ENOMEM;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 获取目标address线性地址对应的页的起始地址 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    address </span>&amp;=<span style="color: #000000;"> PAGE_MASK;
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 检查此地址是否合理 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    error </span>=<span style="color: #000000;"> security_mmap_addr(address);
+    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (error)
+        </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> error;
+
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 对anon_vma-&gt;root-&gt;rwsem上锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    vma_lock_anon_vma(vma);
+</span>
+    <span style="color: #008000;">/*</span><span style="color: #008000;"> 因为是向下扩展，address一定会小于vma-&gt;vm_start，因为外面一层函数判断过了才会调用到此函数 </span><span style="color: #008000;">*/</span>
+    <span style="color: #0000ff;">if</span> (address &lt; vma-&gt;<span style="color: #000000;">vm_start) {
+        unsigned </span><span style="color: #0000ff;">long</span><span style="color: #000000;"> size, grow;
+
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> address到进程栈结束的大小范围，也就是栈扩大后最小的大小 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        size </span>= vma-&gt;vm_end -<span style="color: #000000;"> address;
+        </span><span style="color: #008000;">/*</span><span style="color: #008000;"> address到进程栈开始地址中间空出的大小(以页为单位) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+        grow </span>= (vma-&gt;vm_start - address) &gt;&gt;<span style="color: #000000;"> PAGE_SHIFT;
+
+        error </span>= -<span style="color: #000000;">ENOMEM;
+        </span><span style="color: #0000ff;">if</span> (grow &lt;= vma-&gt;<span style="color: #000000;">vm_pgoff) {
+            
+            </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 做检查 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+            error </span>=<span style="color: #000000;"> acct_stack_growth(vma, size, grow);
+            </span><span style="color: #0000ff;">if</span> (!<span style="color: #000000;">error) {</span>
+                <span style="color: #008000;">/*</span><span style="color: #008000;"> 对该进程页表上锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                spin_lock(</span>&amp;vma-&gt;vm_mm-&gt;<span style="color: #000000;">page_table_lock);
+                </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将此vma的anon_vma_chain链表上的结点从它们加入的红黑树中移除 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                anon_vma_interval_tree_pre_update_vma(vma);
+                </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将此vma的开始线性地址设置为address </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                vma</span>-&gt;vm_start =<span style="color: #000000;"> address;
+                </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将此vma的开始线性地址对应的虚拟页框号更新 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                vma</span>-&gt;vm_pgoff -=<span style="color: #000000;"> grow;
+                </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 将此vma的anon_vma_chain链表上的结点重新加入到它们原本所属的红黑树中(通过avc-&gt;anon_vma-&gt;rb_root) </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                anon_vma_interval_tree_post_update_vma(vma);
+                vma_gap_update(vma);
+                </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 解锁 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+                spin_unlock(</span>&amp;vma-&gt;vm_mm-&gt;<span style="color: #000000;">page_table_lock);
+
+                perf_event_mmap(vma);
+            }
+        }
+    }
+    vma_unlock_anon_vma(vma);
+    khugepaged_enter_vma_merge(vma, vma</span>-&gt;<span style="color: #000000;">vm_flags);
+    </span><span style="color: #008000;">/*</span><span style="color: #008000;"> 更新vma所属mm_struct的vma红黑树 </span><span style="color: #008000;">*/</span><span style="color: #000000;">
+    validate_mm(vma</span>-&gt;<span style="color: #000000;">vm_mm);
+    </span><span style="color: #0000ff;">return</span><span style="color: #000000;"> error;
+}</span></pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>　　可以看到这里更新了vma-&gt;vm_start和vma-&gt;vm_pgoff。这样对反向映射就没有什么影响了，即使栈的vm_start改变了，一样可以通过vma_address()函数获取物理页框对应的线性地址。</p>
+<p>&nbsp;</p>
+<h1>总结</h1>
+<p>　　整篇文章写得并不好，这段内容实际上我也不知道该怎么写，涉及到太多东西，写得过于凌乱，如有不足欢迎指正，谢谢。</p>
+<p>&nbsp;</p>
+<p>待研究解决的问题：</p>
+<ol>
+<li>对于匿名线性区vma，它的vm_file指针是否会指向一个struct file结构，是否是swap file。</li>
+<li>如果在父进程创建子进程完成后，父进程此vma中的映射的页全部取消掉映射，是否会把vma的anon_vma的红黑树中的anon_vma_chain都清除。</li>
+<li>博客园有没有点击查看大图的功能？看不清楚图片的可以右键从新窗口打开图片。</li>
+</ol>
+<p>&nbsp;</p></div><div id="MySignature"></div>
+        <div class="clear"></div>
+        <div id="blog_post_info_block">
+        <div id="blog_post_info"><div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(5398552,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+            <a id="green_channel_follow" onclick="follow(&#39;e6fd67b8-e65f-e411-b908-9dcfd8948a71&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="http://home.cnblogs.com/u/tolimit/" target="_blank"><img src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/20150120140323.png" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="http://home.cnblogs.com/u/tolimit/">tolimit</a><br>
+            <a href="http://home.cnblogs.com/u/tolimit/followees">关注 - 2</a><br>
+            <a href="http://home.cnblogs.com/u/tolimit/followers">粉丝 - 69</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;e6fd67b8-e65f-e411-b908-9dcfd8948a71&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(5398552,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+    <div class="buryit" onclick="votePost(5398552,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+        <div class="clear"></div>
+        <div id="post_next_prev"><a href="http://www.cnblogs.com/tolimit/p/5286663.html" class="p_n_p_prefix">« </a> 上一篇：<a href="http://www.cnblogs.com/tolimit/p/5286663.html" title="发布于2016-03-23 11:06">linux内存源码分析 - 内存压缩(实现流程)</a><br><a href="http://www.cnblogs.com/tolimit/p/5432674.html" class="p_n_p_prefix">» </a> 下一篇：<a href="http://www.cnblogs.com/tolimit/p/5432674.html" title="发布于2016-04-25 20:55">linux内存源码分析 - 内存压缩(同步关系)</a><br></div>
+    </div>
+</div>
+    <ul class="postmetadata">
+        <li class="icon_cat" id="BlogPostCategory">分类: <a href="http://www.cnblogs.com/tolimit/category/697314.html" target="_blank">[linux内存源码分析]</a></li>
+        <li class="icon_bullet" id="EntryTag">标签: <a href="http://www.cnblogs.com/tolimit/tag/%E5%88%86%E6%9E%90/">分析</a>, <a href="http://www.cnblogs.com/tolimit/tag/%E5%86%85%E6%A0%B8/">内核</a>, <a href="http://www.cnblogs.com/tolimit/tag/linux/">linux</a>, <a href="http://www.cnblogs.com/tolimit/tag/kernel/">kernel</a>, <a href="http://www.cnblogs.com/tolimit/tag/%E6%BA%90%E7%A0%81/">源码</a>, <a href="http://www.cnblogs.com/tolimit/tag/%E7%A0%94%E7%A9%B6/">研究</a>, <a href="http://www.cnblogs.com/tolimit/tag/lru/">lru</a>, <a href="http://www.cnblogs.com/tolimit/tag/%E5%8F%8D%E5%90%91%E6%98%A0%E5%B0%84/">反向映射</a>, <a href="http://www.cnblogs.com/tolimit/tag/anon_vma/">anon_vma</a></li>
+    </ul>
+</div>
+<script type="text/javascript">var allowComments=true,cb_blogId=203092,cb_entryId=5398552,cb_blogApp=currentBlogApp,cb_blogUserGuid='e6fd67b8-e65f-e411-b908-9dcfd8948a71',cb_entryCreatedDate='2016/4/17 15:01:00';loadViewCount(cb_entryId);var cb_postType=1;</script>
+<script type="text/javascript">
+    var m = window.__blog.postRendered;
+    if (m) { m(__$("post")); }
+</script>
+<script type="text/javascript">
+    var m = window.__blog.postRenderPosts;
+    if (m) { m(); }
+</script>
+</div><a name="!comments"></a><div id="blog-comments-placeholder"><div id="comments_pager_top"></div>
+<a class="addcomment" href="http://www.cnblogs.com/tolimit/p/5398552.html#comment_tip">Add your comment</a>
+<h3 id="comments"></h3>
+<div class="feedbackNoItems"></div>
+<script language="javascript" type="text/javascript">
+    var m = window.__blog.preRenderCommentList;
+    if (m) { m(); }
+</script>
+
+<ol class="commentlist" id="commentList">	
+
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410213" class="layer">#1楼</a><a name="3410213" id="comment_anchor_3410213"></a></cite> <a id="a_comment_author_3410213" href="http://www.cnblogs.com/ta-wuhen/" target="_blank">ta_wuhen</a> <a href="http://msg.cnblogs.com/send/ta_wuhen" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2016-04-17 15:26</span></small>
+			</h5>
+			<div id="comment_body_3410213" class="blog_comment_body">谢谢分享，你是从汇编开始学的Linux还是直接跳过汇编，到内核？</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3410213,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3410213,&#39;Bury&#39;,this)">反对(0)</a></div>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410218" class="layer">#2楼</a><a name="3410218" id="comment_anchor_3410218"></a>[<span class="louzhu">楼主</span>]</cite> <a id="a_comment_author_3410218" href="http://www.cnblogs.com/tolimit/" target="_blank">tolimit</a> <a href="http://msg.cnblogs.com/send/tolimit" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2016-04-17 15:33</span></small>
+			</h5>
+			<div id="comment_body_3410218" class="blog_comment_body"><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410213" title="查看所回复的评论" onclick="commentManager.renderComments(0,50,3410213);">@</a>
+ta_wuhen<br>汇编懂点，主要还是通过内核各功能入口处开始去分析学习</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3410218,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3410218,&#39;Bury&#39;,this)">反对(0)</a></div><span id="comment_3410218_avatar" style="display:none;">http://pic.cnblogs.com/face/687284/20150120140323.png</span>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410728" class="layer">#3楼</a><a name="3410728" id="comment_anchor_3410728"></a></cite> <a id="a_comment_author_3410728" href="http://www.cnblogs.com/JaSonS-toy/" target="_blank">jas0ns</a> <a href="http://msg.cnblogs.com/send/jas0ns" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2016-04-18 10:00</span></small>
+			</h5>
+			<div id="comment_body_3410728" class="blog_comment_body">研究内核的人，需要鼓励，尽管我没那么多耐心看完。。</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3410728,&#39;Digg&#39;,this)">支持(1)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3410728,&#39;Bury&#39;,this)">反对(0)</a></div><span id="comment_3410728_avatar" style="display:none;">http://pic.cnblogs.com/face/701231/20150910151409.png</span>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410730" class="layer">#4楼</a><a name="3410730" id="comment_anchor_3410730"></a>[<span class="louzhu">楼主</span>]</cite> <a id="a_comment_author_3410730" href="http://www.cnblogs.com/tolimit/" target="_blank">tolimit</a> <a href="http://msg.cnblogs.com/send/tolimit" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2016-04-18 10:01</span></small>
+			</h5>
+			<div id="comment_body_3410730" class="blog_comment_body"><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3410728" title="查看所回复的评论" onclick="commentManager.renderComments(0,50,3410728);">@</a>
+jas0ns<br>多谢！</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3410730,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3410730,&#39;Bury&#39;,this)">反对(0)</a></div><span id="comment_3410730_avatar" style="display:none;">http://pic.cnblogs.com/face/687284/20150120140323.png</span>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3906656" class="layer">#5楼</a><a name="3906656" id="comment_anchor_3906656"></a></cite> <a id="a_comment_author_3906656" href="http://home.cnblogs.com/u/1332499/" target="_blank">lookyao</a> <a href="http://msg.cnblogs.com/send/lookyao" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2018-02-09 17:36</span></small>
+			</h5>
+			<div id="comment_body_3906656" class="blog_comment_body">请教一个问题：当子进程P2中的某一个VMA（在父进程中VMA已经建立映射有相应的物理页），当P2写此页时，为P2分配了新的page，会为P2的页表建立新的映射，从而会覆盖之前从父进程拷贝过来的页表项内容。当P2子进程中，此VMA中所有页都已经分配新的物理页后，此时P2中那个同父进程关联AVC，还在父进程P1的AV的红黑树中吗？</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3906656,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3906656,&#39;Bury&#39;,this)">反对(0)</a></div>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+		<li class="alt">
+			<h5>
+				<cite><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3914551" class="layer">#6楼</a><a name="3914551" id="comment_anchor_3914551"></a><span id="comment-maxId" style="display:none;">3914551</span><span id="comment-maxDate" style="display:none;">2018/3/4 2:03:41</span></cite> <a id="a_comment_author_3914551" href="http://www.cnblogs.com/firocb/" target="_blank">firocb</a> <a href="http://msg.cnblogs.com/send/firocb" title="发送站内短消息" class="sendMsg2This">&nbsp;</a><small> <span class="comment_date">2018-03-04 02:03</span></small>
+			</h5>
+			<div id="comment_body_3914551" class="blog_comment_body"><a href="http://www.cnblogs.com/tolimit/p/5398552.html#3906656" title="查看所回复的评论" onclick="commentManager.renderComments(0,50,3906656);">@</a>
+lookyao<br>理论上, 应该从P1的AV 移除, 没有看到相关代码. <br>实际上, 不移除影响应该不大.</div><div class="comment_vote"><a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(3914551,&#39;Digg&#39;,this)">支持(0)</a><a href="javascript:void(0);" class="comment_bury" onclick="return voteComment(3914551,&#39;Bury&#39;,this)">反对(0)</a></div><span id="comment_3914551_avatar" style="display:none;">http://pic.cnblogs.com/face/127740/20130514171057.png</span>
+			<div class="opt_comment"><span class="comment_actions"></span></div>
+		</li>
+	
+</ol>
+
+<script language="javascript" type="text/javascript">
+    var m = window.__blog.commentListRendered;
+    if (m) { m(__$("commentList")); }
+</script><div id="comments_pager_bottom"></div></div><script type="text/javascript">var commentManager = new blogCommentManager();commentManager.renderComments(0);</script>
+<div id="comment_form" class="commentform">
+<a name="commentform"></a>
+<div id="divCommentShow"></div>
+<div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="http://www.cnblogs.com/tolimit/p/5398552.html#" onclick="return RefreshPage();">刷新页面</a><a href="http://www.cnblogs.com/tolimit/p/5398552.html#top">返回顶部</a></div>
+<div id="comment_form_container"><div class="login_tips">注册用户登录后才能发表评论，请 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，<a href="http://www.cnblogs.com/">访问</a>网站首页。</div></div>
+<div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+<div id="ad_t2"><a href="http://www.ucancode.com/index.htm" target="_blank">【推荐】超50万VC++源码: 大型组态工控、电力仿真CAD与GIS源码库！</a><br><a href="http://click.aliyun.com/m/43774/" target="_blank">【缅怀】传奇谢幕，回顾霍金76载传奇人生</a><br><a href="http://arction.cn/" target="_blank">【推荐】业界最快速.NET数据可视化图表组件</a><br><a href="https://cloud.tencent.com/act/campus?fromSource=gwzcw.860539.860539.860539" target="_blank">【推荐】腾讯云校园拼团福利，1核2G服务器10元/月！</a><br><a href="https://www.yunqi2050.com/#/index" target="_blank">【活动】2050 科技公益大会 - 年青人因科技而团聚</a><br></div>
+<div id="opt_under_post"></div>
+<div id="cnblogs_c1" class="c_ad_block"><a href="https://market.cloud.tencent.com/act/wangjian/mtscloudwj?fromSource=gwzcw.882665.882665.882665" target="_blank"><img width="300" height="250" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/24442-20180314220122373-1718033865.jpg" alt="qcloud0314"></a></div>
+<div id="under_post_news"><div class="itnews c_ad_block"><b>最新IT新闻</b>:<br> ·  <a href="https://news.cnblogs.com/n/592379/" target="_blank">刷屏被封背后，“新世相”们的隐藏逻辑</a><br> ·  <a href="https://news.cnblogs.com/n/592374/" target="_blank">外卖小哥送餐途中撞伤路人 法院：平台赔20万余元</a><br> ·  <a href="https://news.cnblogs.com/n/592373/" target="_blank">谷歌离职员工：谁能从谷歌手里偷走安卓？</a><br> ·  <a href="https://news.cnblogs.com/n/592372/" target="_blank">CryptoKitties脱离母公司，获1200万美元独立融资</a><br> ·  <a href="https://news.cnblogs.com/n/592371/" target="_blank">阅文宣布与搜狗订立综合合作协议</a><br>» <a href="http://news.cnblogs.com/" title="IT新闻" target="_blank">更多新闻...</a></div></div>
+<div id="cnblogs_c2" class="c_ad_block"><a href="http://click.aliyun.com/m/42835/" target="_blank"><img width="468" height="60" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/TB1mEZFaWmWBuNjy1XaXXXCbXXa-468-60.jpg" alt="阿里云0308"></a></div>
+<div id="under_post_kb"><div class="itnews c_ad_block" id="kb_block"><b>最新知识库文章</b>:<br><div id="kb_recent"> ·  <a href="http://kb.cnblogs.com/page/575255/" target="_blank">写给自学者的入门指南</a><br> ·  <a href="http://kb.cnblogs.com/page/578690/" target="_blank">和程序员谈恋爱</a><br> ·  <a href="http://kb.cnblogs.com/page/585734/" target="_blank">学会学习</a><br> ·  <a href="http://kb.cnblogs.com/page/588938/" target="_blank">优秀技术人的管理陷阱</a><br> ·  <a href="http://kb.cnblogs.com/page/590141/" target="_blank">作为一个程序员，数学对你到底有多重要</a><br></div>» <a href="http://kb.cnblogs.com/" target="_blank">更多知识库文章...</a></div></div>
+<div id="HistoryToday" class="c_ad_block"></div>
+<script type="text/javascript">
+    fixPostBody();
+    setTimeout(function () { incrementViewCount(cb_entryId); }, 50);
+    deliverAdT2();
+    deliverAdC1();
+    deliverAdC2();    
+    loadNewsAndKb();
+    loadBlogSignature();
+    LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+    GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+    loadOptUnderPost();
+    GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);   
+</script>
+</div>
+
+
+        </div>
+
+        <script type="text/javascript">
+            var m = window.__blog.contentRendered;
+            if (m) { m(__$("content")); }
+        </script>
+
+        <div id="sidebar">
+            
+<div id="about">
+<div>
+<h2 id="about_title">About</h2>
+<div id="about_body">
+<div id="blog-news"><p>微信:</p><p><img style="line-height: 1.5" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/121241448231724.png" alt="" width="180" height="180">&nbsp;</p><p>
+</p><p>邮箱：</p>
+<p>348958453@qq.com</p><div id="profile_block">昵称：<a href="https://home.cnblogs.com/u/tolimit/">tolimit</a><br>园龄：<a href="https://home.cnblogs.com/u/tolimit/" title="入园时间：2014-10-30">3年4个月</a><br>粉丝：<a href="https://home.cnblogs.com/u/tolimit/followers/">69</a><br>关注：<a href="https://home.cnblogs.com/u/tolimit/followees/">2</a><div id="p_b_follow"><a href="javascript:void(0);" onclick="follow(&#39;e6fd67b8-e65f-e411-b908-9dcfd8948a71&#39;)">+加关注</a></div><script>getFollowStatus('e6fd67b8-e65f-e411-b908-9dcfd8948a71')</script></div></div>
+<script type="text/javascript">loadBlogNews();</script>
+</div>
+</div>
+</div>
+
+            <script type="text/javascript">
+                var m = window.__blog.aboutRendered;
+                if (m) { m(__$("about")); }
+            </script>
+            
+<div id="mySearchWrapper">
+    <div id="mySearch">
+        <input type="image" src="./linux内存源码分析 - 内存回收(匿名页反向映射) - tolimit - 博客园_files/btnsearch.gif" id="btnZzk" class="submit" onclick="zzk_go();return false;">
+        <label class="lb_search"><input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="keyword"></label>
+    </div>
+</div>
+
+            <script type="text/javascript">
+                var m = window.__blog.searchFormRendered;
+                if (m) { m(__$("searchform")); }
+            </script>
+            <div id="sideMain">
+            <div id="side-recent-comments">
+        <h2>最新评论</h2>
+        <ul class="voice">
+                <li>
+                    <a href="http://www.cnblogs.com/tolimit/p/5398552.html#3914551">Re:linux内存源码分析 - 内存回收(匿名页反向映射)</a>
+                    <br>
+                    <a class="child" href="http://www.cnblogs.com/tolimit/p/5398552.html#3914551">
+                        @lookyao
+理论上, 应该从P1的AV 移除, 没有看到相关代码. 
+实际上, 不移除影响应该不大.
+                        -- firocb
+                    </a>
+                </li>
+                <li>
+                    <a href="http://www.cnblogs.com/tolimit/p/4566189.html#3907334">Re:linux内存源码分析 - SLAB分配器概述</a>
+                    <br>
+                    <a class="child" href="http://www.cnblogs.com/tolimit/p/4566189.html#3907334">
+                        @天地—蜉蝣
+1.我个人认为分为full和partial就足够了，但是分为三个，我认为主要跟tlb命中率有关
+
+2.cpu高级缓存就是cache，这样做是为了提高cache命中率，比如刚释放的slab，那么很有可能此slab在cpu的cache中，下次分配就直接将此slab分配，这样这个slab的使用有可能提高了cache的命中率
+                        -- tolimit
+                    </a>
+                </li>
+                <li>
+                    <a href="http://www.cnblogs.com/tolimit/p/5398552.html#3906656">Re:linux内存源码分析 - 内存回收(匿名页反向映射)</a>
+                    <br>
+                    <a class="child" href="http://www.cnblogs.com/tolimit/p/5398552.html#3906656">
+                        请教一个问题：当子进程P2中的某一个VMA（在父进程中VMA已经建立映射有相应的物理页），当P2写此页时，为P2分配了新的page，会为P2的页表建立新的映射，从而会覆盖之前从父进程拷贝过来的页表项内容。当P2子进程中，此VMA中所有页都已经分配新的物理页后，此时P2中那个同父进程关联AVC，还在父进程P1的AV的红黑树中吗？
+                        -- lookyao
+                    </a>
+                </li>
+                <li>
+                    <a href="http://www.cnblogs.com/tolimit/p/4566189.html#3898362">Re:linux内存源码分析 - SLAB分配器概述</a>
+                    <br>
+                    <a class="child" href="http://www.cnblogs.com/tolimit/p/4566189.html#3898362">
+                        你好，看了你的分析，明白了很多，但是还有些疑惑；
+1.slab分配器为什么要分为full，partial，empty三个链表管理。而不是full，empty或者直接用一个链表组织？
+
+2.本地CPU空闲对象链表管理的是cup的高级缓存，还是内存条上的内存呢？如果是CPU高级缓存，当空闲链表为空时，为什么在内存上申请的对象，释放时会将其加入这个链表？
+
+还望大牛解答，谢谢。
+                        -- 天地—蜉蝣
+                    </a>
+                </li>
+                <li>
+                    <a href="http://www.cnblogs.com/tolimit/p/5287801.html#3889526">Re:linux内存源码分析 - 伙伴系统(释放页框)</a>
+                    <br>
+                    <a class="child" href="http://www.cnblogs.com/tolimit/p/5287801.html#3889526">
+                        博主您好，释放页框步骤1中，应该是判断页描述符的_count字段是否是1吧，atomic_dec_and_test(v)函数是将v原子的减1，然后判断值是0，则返回true，否则返回false吧
+                        -- leontian
+                    </a>
+                </li>
+        </ul>
+    </div></div>
+            <div id="sideRight">
+            <div id="side-archives">
+        <h2>随笔档案</h2>
+        <ul class="date">
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2016/05.html">2016年5月(2)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2016/04.html">2016年4月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2016/03.html">2016年3月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/12.html">2015年12月(1)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/10.html">2015年10月(1)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/07.html">2015年7月(4)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/06.html">2015年6月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/05.html">2015年5月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/04.html">2015年4月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/03.html">2015年3月(5)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/02.html">2015年2月(3)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2015/01.html">2015年1月(11)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2014/11.html">2014年11月(11)</a></li>
+                <li><a href="http://www.cnblogs.com/tolimit/archive/2014/10.html">2014年10月(2)</a></li>
+        </ul>
+    </div>    
+    
+    
+
+
+</div>
+            <div id="sideLeft">
+            <div id="side-categories">
+        <h2>随笔分类</h2>
+        <ul class="folder">
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/662716.html">[linux调度器源码分析](4)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/697314.html">[linux内存源码分析](13)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649982.html">[linux内核](11)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649994.html">[linux项目](4)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/662551.html">[linux知识](1)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/690093.html">[linux中断源码分析](4)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649980.html">[Wifidog源码分析](5)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649993.html">[面试相关](2)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649979.html">[驱动知识](10)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649981.html">[算法学习](1)</a>
+                </li>
+                <li>
+                    
+                    <a href="http://www.cnblogs.com/tolimit/category/649983.html">其他(1)</a>
+                </li>
+        </ul>
+    </div><div id="side-top-posts-custom">
+    <h2>推荐排行榜</h2>
+    <div id="TopDiggPostsBlock"><ul><li><a href="http://www.cnblogs.com/tolimit/p/5435068.html">1. linux内存源码分析 - 内存回收(整体流程)(6)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4530370.html">2. linux源码分析 - 进程(4)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4262851.html">3. 关于linux系统如何实现fork的研究(一)(4)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4271981.html">4. 关于linux系统如何实现fork的研究(二)(3)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4303052.html">5. linux调度器源码分析 - 概述(一)(2)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/5447448.html">6. linux内存源码分析 - 内存回收(lru链表)(2)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4390724.html">7. linux中断源码分析 - 概述(一)(2)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4371995.html">8. 交叉编译php5,、nginx、squid方法(2)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/5481419.html">9. linux内存源码分析 - 零散知识点(2)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4335681.html">10. linux调度器源码分析 - 运行(四)(1)</a></li></ul></div>
+</div><div id="side-top-posts">
+    <h2>阅读排行榜</h2>
+    <div id="TopViewPostsBlock"><ul><li><a href="http://www.cnblogs.com/tolimit/p/5065761.html">1. 内核参数说明(6962)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/5435068.html">2. linux内存源码分析 - 内存回收(整体流程)(4440)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4303052.html">3. linux调度器源码分析 - 概述(一)(4269)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4566189.html">4. linux内存源码分析 - SLAB分配器概述(4015)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4643323.html">5. 给ubuntu换内核(3860)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4654109.html">6. linux内存源码分析 - SLUB分配器概述(3839)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4223644.html">7. wifidog源码分析 - wifidog原理(3681)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4585803.html">8. linux内存源码分析 - 页表的初始化(3424)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4551428.html">9. linux内存管理源码分析 - 页框分配器(3191)</a></li><li><a href="http://www.cnblogs.com/tolimit/p/4530370.html">10. linux源码分析 - 进程(3023)</a></li></ul></div>
+</div></div>
+            
+                <div id="sideContainer"></div>
+                <script type="text/javascript">
+                    $.ajax({
+                        url: '/' + currentBlogApp + '/mvc/blog/Minyx2_Lite_SideColumn.aspx',
+                        data: '{}',
+                        type: 'post',
+                        dataType: 'text',
+                        contentType: 'application/json; charset=utf-8',
+                        success: function (data) {
+                            if (data) {
+                                $("#sideContainer").html(data);
+                                loadBlogDefaultCalendar();
+                                loadBlogSideBlocks();
+                                var m = window.__blog.sideContainerRendered;
+                                if (m) { m(__$("sideContainer")); }
+                                window.__blog.sidebar.__layout();
+                            }
+                        }
+                    });
+
+                </script>
+            
+        </div>
+
+        <script type="text/javascript">
+            var m = window.__blog.sidebarRendered;
+            if (m) { m(__$("sidebar")); }
+        </script>
+
+        <div id="footer">
+            
+<p id="logoFoot">
+    <a href="http://www.spiga.com.mx/" title="Agencia Interactiva Spiga">www.spiga.com.mx</a>
+</p>
+<div class="footText">
+<p>
+Copyright ©2018 tolimit
+</p>
+<p>
+<a href="http://www.cnblogs.com/">博客园</a>
+</p>
+</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var m = window.__blog.wrapperRendered;
+        if (m) { m(__$("wrapper")); }
+    </script>
+
+</div>
+<script type="text/javascript">
+    var m = window.__blog.containerRendered;
+    if (m) { m(__$("container")); }
+</script>
+
+
+</body></html>

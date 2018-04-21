@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<!-- saved from url=(0071)http://www.d-kai.me/linux%E6%96%87%E4%BB%B6%E9%A2%84%E8%AF%BB%E4%B8%89/ -->
+<html class=" js flexbox canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Linux文件预读(三) – 再见</title>
+		
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="概述   前面两篇关于文件系统的预读我们通过实例阐述了应用程序的顺序读而触发操作系统对文件大小预取情况，本篇博客我们主要描述预读如何解决交织读的问题。所谓的交织读指的是多线程（进程）读同一个打开的文件描述符，单个线程的顺序读在操作系统看来可能会变成随机读。同样我们还是结合实例来分析。    情境3：交织读 事例代码 {     ......     f = open(&#39;file&#39;, ......)     pthread_create(">
+		<meta name="keywords" content="Linux文件预读(三)再见,文件系统,">
+		<link rel="stylesheet" id="animate-style-css" href="./Linux文件预读(三) – 再见_files/animate.css" type="text/css" media="all">
+<link rel="stylesheet" id="awesome-style-css" href="./Linux文件预读(三) – 再见_files/font-awesome.css" type="text/css" media="all">
+<link rel="stylesheet" id="bootstrap-style-css" href="./Linux文件预读(三) – 再见_files/bootstrap.css" type="text/css" media="all">
+<link rel="stylesheet" id="superfish-style-css" href="./Linux文件预读(三) – 再见_files/superfish.css" type="text/css" media="all">
+<link rel="stylesheet" id="kratos-style-css" href="./Linux文件预读(三) – 再见_files/style.css" type="text/css" media="all">
+	<style type="text/css">.recentcomments a{display:inline !important;padding:0 !important;margin:0 !important;}</style>
+			</head>
+		<body>
+		<div id="kratos-wrapper">
+			<div id="kratos-page"><nav id="offcanvas-menu" class="menu-menu-1-container" style="height: 720px;"><ul id="" class="" style="touch-action: pan-y;"><li id="menu-item-16" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-16"><a href="http://www.d-kai.me/category/%e8%af%97%e6%ad%8c/">诗歌</a></li>
+<li id="menu-item-56" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-56"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/">技术</a></li>
+<li id="menu-item-57" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-57"><a href="http://www.d-kai.me/wp-admin/">登录</a></li>
+</ul></nav>
+				<div id="kratos-header">
+					<header id="kratos-header-section">
+						<div class="container">
+							<div class="nav-header">
+																	<a href="http://www.d-kai.me/linux%E6%96%87%E4%BB%B6%E9%A2%84%E8%AF%BB%E4%B8%89/#" class="js-kratos-nav-toggle kratos-nav-toggle"><i></i></a>
+																																	<h1 id="kratos-logo"><a href="http://www.d-kai.me/">再见</a></h1>
+																							 <nav id="kratos-menu-wrap" class="menu-menu-1-container"><ul id="kratos-primary-menu" class="sf-menu sf-js-enabled sf-arrows" style="touch-action: pan-y;"><li id="menu-item-16" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-16"><a href="http://www.d-kai.me/category/%e8%af%97%e6%ad%8c/">诗歌</a></li>
+<li id="menu-item-56" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor menu-item-56"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/">技术</a></li>
+<li id="menu-item-57" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-57"><a href="http://www.d-kai.me/wp-admin/">登录</a></li>
+</ul></nav>							</div>
+						</div>
+					</header>
+				</div>
+<div class="kratos-start kratos-hero-2 kratos-post-header"><div class="kratos-overlay kratos-post" style="background:#222831"></div></div><div id="kratos-blog-post" class="kratos-page-gray">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-8">
+								<article class="animate-box fadeInUp animated">
+	<div class="kratos-hentry kratos-post-inner clearfix">
+		<header class="kratos-entry-header">
+			<h1 class="kratos-entry-title text-center">Linux文件预读(三)</h1>
+			<div class="kratos-post-meta text-center">
+				<span>
+				<a href="http://www.d-kai.me/linux%E6%96%87%E4%BB%B6%E9%A2%84%E8%AF%BB%E4%B8%89/#"><i class="fa fa-calendar"></i> 2016/8/6</a>
+				</span>
+				<span>
+				<a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f/"><i class="fa fa-folder-open-o"></i> 文件系统</a>				<a href="http://www.d-kai.me/linux%e6%96%87%e4%bb%b6%e9%a2%84%e8%af%bb%e4%b8%89/#respond"><i class="fa fa-commenting-o"></i> 0 Comment</a>				</span>
+				<span>
+				<a href="http://www.d-kai.me/linux%e6%96%87%e4%bb%b6%e9%a2%84%e8%af%bb%e4%b8%89/"><i class="fa fa-eye"></i> 173 Views</a>
+				</span>
+			</div>
+		</header>
+		<div class="kratos-post-content"><h4><del></del>概述</h4>
+<div>
+<p>前面两篇关于文件系统的预读我们通过实例阐述了应用程序的顺序读而触发操作系统对文件大小预取情况，本篇博客我们主要描述预读如何解决交织读的问题。所谓的交织读指的是多线程（进程）读同一个打开的文件描述符，单个线程的顺序读在操作系统看来可能会变成随机读。同样我们还是结合实例来分析。</p>
+<p><span id="more-383"></span></p>
+<h4>情境3：交织读</h4>
+<p>事例代码</p>
+<pre><code>{
+    ......
+    f = open("file", ......)
+    pthread_create(read_file_1, f, ...)
+    pthread_create(read_file_2, f, ...)
+    ......
+}
+read_file_1(f)
+{
+    lseek(f, 0, SEEK_SET);
+    read(f, ..., 2 * 4096);
+    read(f, ..., 4 * 4096)
+    read(f, ..., 16 * 4096)
+}
+
+read_file_2(f)
+{
+    lseek(f, 128 * 4096, SEEK_SET);
+    read(f, ..., 2 * 4096);
+    read(f, ..., 4 * 4096)
+    read(f, ..., 16 * 4096)
+}
+</code></pre>
+<p>事例代码中创建了两个线程同时读文件file，每个线程均是顺序读，让我们看看操作系统的预读是如何处理这种情况的。因为多线程的执行顺序可能是多种多样的，我们只列举一种执行流并解释，线程1 read 1，线程2 read 1，线程2 read 2，线程1 read 2，线程1 read 3，线程2 read3。</p>
+<p><strong>线程1 Read 1</strong></p>
+<p>线程1读文件的前两个页面，由于尚未缓存命中，因此会触发文件系统的一次同步预读，确定预读窗口为</p>
+<p><strong>(ra-&gt;start, ra-&gt;size, ra-&gt;async_size) = (0, 4, 2)</strong></p>
+<p>形成的预读窗口如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_11.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_11.png" alt="Linux文件预读(三)"></a></p>
+<p><strong>线程2 Read 1</strong></p>
+<p>线程2读文件的128和129两个页面，由于这两个页面也尚未缓存在page cache中，也必须启动一次同步预读，这里会更改上面的预读窗口为(128, 4, 2)，更新后的预读窗口如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_12.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_12.png" alt="Linux文件预读(三)"></a></p>
+<p>线程2 Read 2</p>
+<p>由于本次读和上次读是顺序读，且本次访问的4个页面有两个缓存命中，但由于访问了PAGE 130，而该页面又被打上了异步预读标记，因此在访问页面130的时候会触发一次异步预读，更新预读窗口为（132， 8， 8），如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_13.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_13.png" alt="Linux文件预读(三)"></a></p>
+<p>由于本次会访问4个页面，因此PAGE 132也会被访问，从而又触发一次异步预读，更新预读窗口为（140, 16, 16），最终形成的预读窗口如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_14.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_14.png" alt="Linux文件预读(三)"></a></p>
+<p>线程2两次读 read1 和read 2以后形成的page cache状态如下所示：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_15.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_15.png" alt="Linux文件预读(三)"></a></p>
+<p><strong>线程1 Read 2</strong></p>
+<p>接下来线程1进行第二次读，范围是PAGE 2 ~ PAGE 5，由于线程1 read 1将PAGE 2 和PAGE 3已经预读进page cache，因此可直接命中，但在访问PAGE 2的时候会触发一次异步预读，所以这里会更新预读窗口，但很不幸，预读窗口保存的是线程2的预读状态，因此本次访问和之前的预读窗口并不连续，因此我们必须想办法来恢复线程1的之前的预读状态，会触发下面的执行逻辑：</p>
+<pre><code>if (hit_readahead_marker) {
+        pgoff_t start;
+
+        rcu_read_lock();
+        //计算本次应该从哪个页面开始读
+        // 计算的方法是:从上次的offset开始查找，找到第一个没有缓存在page cache 的页面
+        start = radix_tree_next_hole(&amp;mapping-&gt;page_tree, offset+1,max);
+        rcu_read_unlock();
+
+        // 如果没有找到或者与本次读的偏移相差甚大，那么其实无需再读了
+        if (!start || start - offset &gt; max)
+            return 0;
+
+        ra-&gt;start = start;
+        ra-&gt;size = start - offset;  /* old async_size */
+        ra-&gt;size += req_size;
+        ra-&gt;size = get_next_ra_size(ra, max);
+        //既然是异步预读，那读出的所有页面均是提前读的，因此设置async_size = size
+        ra-&gt;async_size = ra-&gt;size;
+        goto readit;
+    }
+</code></pre>
+<p>这里恢复线程1的预读窗口方法也比较简单：从本次预读的页面开始向后搜索，找到第一个没有缓存在page cache的页面，本例中是page4，然后以此为本次预读的起始页面号，并可以计算出上次的预读窗口大小（page 4 – page 2 = 2），根据这两个值便可确定本次预读窗口为(4, 8, 8)。<br>
+更新后的预读窗口如下图所示：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_16.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_16.png" alt="Linux文件预读(三)"></a></p>
+<p>在访问页面4时，会再次出发异步预读，更新预读窗口为（8, 8, 8），如下图所示：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_17.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_17.png" alt="Linux文件预读(三)"></a></p>
+<p>因此，线程1经过read 1 和read 2，形成的page cache状态如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_18.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_18.png" alt="Linux文件预读(三)"></a></p>
+<p><strong>线程1 Read 3</strong></p>
+<p>线程1第三次读的页面是PAGE 6 ~ PAGE 13，全部在缓存命中，但在访问PAGE 8的时候会触发一次异步预读，更新预读窗口为(16, 16, 16)。</p>
+<p>在线程1经历了三次读以后，page cache的状态如下图所示：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_19.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_19.png" alt="Linux文件预读(三)"></a></p>
+<p><strong>线程2 Read 3</strong></p>
+<p>线程2第三次读页面是PAGE 134 ~ PAGE 141，这些全在缓存中命中，但是访问PAGE 140时会触发一次异步预读。更新预读窗口，但是很不幸，之前的预读窗口是线程1的，因此我们必须搜寻才能恢复线程2的预读窗口，搜寻过程之前已经描述，这里不再啰嗦，恢复出线程2的预读窗口为(156, 32,32)。因此，总的来看，由于线程2的三次读形成的page cache状态如下：</p>
+<p><a href="./Linux文件预读(三) – 再见_files/read_ahead_20.png"><img class=" aligncenter" title="Linux文件预读(三)" src="./Linux文件预读(三) – 再见_files/read_ahead_20.png" alt="Linux文件预读(三)"></a></p>
+</div>
+</div>
+		<footer class="kratos-entry-footer clearfix">
+						<div class="post-like-donate visible-lg text-center clearfix">
+    			<a href="javascript:;" data-action="love" data-id="383" class="KratosLove btn btn-primary ">
+    				<i class="fa fa-heart-o"></i> 喜欢</a>
+    			<span class="post-like-donate-count">
+       				 	0</span>
+   				<a href="http://www.d-kai.me/linux%E6%96%87%E4%BB%B6%E9%A2%84%E8%AF%BB%E4%B8%89/" class="KratosDonate btn btn-primary"><i class="fa fa-bitcoin"></i> 打赏</a>
+    		</div>
+    				
+			<div class="footer-tag clearfix">
+				<div class="pull-left">
+				<i class="fa fa-tags"></i>
+				<a>No Tag</a>				</div>
+		</div>					 
+		</footer>
+	</div>
+			<nav class="navigation post-navigation clearfix" role="navigation">
+				<div class="nav-previous clearfix">
+			<a title="Linux文件系统预读(二)" href="http://www.d-kai.me/linux%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e9%a2%84%e8%af%bb%e4%ba%8c/">&lt; 上一篇</a>
+		</div>
+						<div class="nav-next">
+			<a title="linux内核sys_mount()分析" href="http://www.d-kai.me/linux%e5%86%85%e6%a0%b8sys_mount%e5%88%86%e6%9e%90/">下一篇 &gt;</a>
+		</div>
+			</nav>
+	
+<div id="comments" class="comments-area">
+
+			<script type="text/javascript" language="javascript">
+/* <![CDATA[ */
+    function grin(tag) {
+        var myField;
+        tag = ' ' + tag + ' ';
+        if (document.getElementById('comment') && document.getElementById('comment').type == 'textarea') {
+            myField = document.getElementById('comment');
+        } else {
+            return false;
+        }
+        if (document.selection) {
+            myField.focus();
+            sel = document.selection.createRange();
+            sel.text = tag;
+            myField.focus();
+        }
+        else if (myField.selectionStart || myField.selectionStart == '0') {
+            var startPos = myField.selectionStart;
+            var endPos = myField.selectionEnd;
+            var cursorPos = endPos;
+            myField.value = myField.value.substring(0, startPos)
+                          + tag
+                          + myField.value.substring(endPos, myField.value.length);
+            cursorPos += tag.length;
+            myField.focus();
+            myField.selectionStart = cursorPos;
+            myField.selectionEnd = cursorPos;
+        }
+        else {
+            myField.value += tag;
+            myField.focus();
+        }
+    }
+/* ]]> */
+</script>
+							<div id="respond" class="comment-respond">
+				<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="http://www.d-kai.me/linux%E6%96%87%E4%BB%B6%E9%A2%84%E8%AF%BB%E4%B8%89/#respond" style="display:none;">Cancel reply</a></small></h3>
+									<form action="http://www.d-kai.me/wp-comments-post.php" method="post" id="commentform" class="comment-form">
+																			<p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> Required fields are marked <span class="required">*</span></p>							<div class="comment-form-author form-group has-feedback"><div class="input-group"><div class="input-group-addon"><i class="fa fa-user"></i></div><input class="form-control" placeholder="昵称" id="author" name="author" type="text" value="" "="" size="30"><span class="form-control-feedback required">*</span></div></div>
+<div class="comment-form-email form-group has-feedback"><div class="input-group"><div class="input-group-addon"><i class="fa fa-envelope-o"></i></div><input class="form-control" placeholder="邮箱" id="email" name="email" type="text" value="" "="" size="30"><span class="form-control-feedback required">*</span></div></div>
+<div class="comment-form-url form-group has-feedback"><div class="input-group"><div class="input-group-addon"><i class="fa fa-link"></i></div><input class="form-control" placeholder="网站" id="url" name="url" type="text" value="" "="" size="30"></div></div>
+												<div class="comment form-group has-feedback"><div class="input-group"><p>
+<a href="javascript:grin(&#39;:question:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_question.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:razz:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_razz.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:sad:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_sad.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:evil:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_evil.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:exclaim:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_exclaim.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:smile:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_smile.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:redface:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_redface.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:biggrin:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_biggrin.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:surprised:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_surprised.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:eek:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_eek.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:confused:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_confused.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:idea:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_idea.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:lol:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_lol.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:mad:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_mad.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:twisted:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_twisted.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:rolleyes:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_rolleyes.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:wink:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_wink.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:cool:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_cool.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:arrow:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_arrow.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:neutral:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_neutral.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:cry:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_cry.gif" alt="" class="size-smiley"></a>
+<a href="javascript:grin(&#39;:mrgreen:&#39;)"><img src="./Linux文件预读(三) – 再见_files/icon_mrgreen.gif" alt="" class="size-smiley"></a></p><textarea class="form-control" id="comment" placeholder=" " name="comment" rows="5" aria-required="true" required="" onkeydown="if(event.ctrlKey){if(event.keyCode==13){document.getElementById(&#39;submit&#39;).click();return false}};"></textarea></div></div>						<p class="form-allowed-tags" id="form-allowed-tags">You may use these <abbr title="HyperText Markup Language">HTML</abbr> tags and attributes:  <code>&lt;a href="" title=""&gt; &lt;abbr title=""&gt; &lt;acronym title=""&gt; &lt;b&gt; &lt;blockquote cite=""&gt; &lt;cite&gt; &lt;code&gt; &lt;del datetime=""&gt; &lt;em&gt; &lt;i&gt; &lt;q cite=""&gt; &lt;s&gt; &lt;strike&gt; &lt;strong&gt; </code></p>
+						<p class="form-submit"><input name="submit" type="submit" id="submit" class="btn btn-primary" value="Post Comment"> <input type="hidden" name="comment_post_ID" value="383" id="comment_post_ID">
+<input type="hidden" name="comment_parent" id="comment_parent" value="0">
+</p>					</form>
+							</div><!-- #respond -->
+			
+</div></article>
+							</div>
+			<div id="kratos-widget-area" class="col-md-4 hidden-xs hidden-sm">
+						<aside id="recent-posts-2" class="widget widget_recent_entries clearfix animate-box fadeInUp animated">		<h4 class="widget-title">Recent Posts</h4>		<ul>
+					<li>
+				<a href="http://www.d-kai.me/etcd-raft%e8%8a%82%e7%82%b9%e5%8f%98%e6%9b%b4/">etcd-raft节点变更</a>
+						</li>
+					<li>
+				<a href="http://www.d-kai.me/library_path%e5%92%8cld_library_path%e7%9a%84%e5%8c%ba%e5%88%ab/">LIBRARY_PATH与LD_LIBRARY_PATH</a>
+						</li>
+					<li>
+				<a href="http://www.d-kai.me/580/">etcd-raft日志管理</a>
+						</li>
+					<li>
+				<a href="http://www.d-kai.me/%e6%9c%80%e9%95%bf%e5%ad%90%e4%b8%b2%e9%97%ae%e9%a2%98/">最长子串问题</a>
+						</li>
+					<li>
+				<a href="http://www.d-kai.me/google-file-system/">Google File System</a>
+						</li>
+				</ul>
+		</aside><aside id="categories-8" class="widget widget_categories clearfix animate-box fadeInUp animated"><h4 class="widget-title">Categories</h4>		<ul>
+	<li class="cat-item cat-item-1"><a href="http://www.d-kai.me/category/uncategorized/">Other</a>
+</li>
+	<li class="cat-item cat-item-5"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/">技术</a>
+<ul class="children">
+	<li class="cat-item cat-item-21"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/coding/">Coding</a>
+</li>
+	<li class="cat-item cat-item-24"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/erlang-posts/">Erlang</a>
+</li>
+	<li class="cat-item cat-item-6"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/golang/">Golang</a>
+</li>
+	<li class="cat-item cat-item-7"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/linux-io/">Linux IO</a>
+</li>
+	<li class="cat-item cat-item-20"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/shell/">shell</a>
+</li>
+	<li class="cat-item cat-item-12"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%88%86%e5%b8%83%e5%bc%8f/">分布式</a>
+	<ul class="children">
+	<li class="cat-item cat-item-25"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%88%86%e5%b8%83%e5%bc%8f/%e4%b8%80%e8%87%b4%e6%80%a7%e5%8d%8f%e8%ae%ae/">一致性协议</a>
+</li>
+	<li class="cat-item cat-item-13"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%88%86%e5%b8%83%e5%bc%8f/%e5%ad%98%e5%82%a8/">存储</a>
+</li>
+	</ul>
+</li>
+	<li class="cat-item cat-item-8"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f/">存储系统</a>
+	<ul class="children">
+	<li class="cat-item cat-item-23"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f/ceph/">Ceph</a>
+</li>
+	<li class="cat-item cat-item-17"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e5%ad%98%e5%82%a8%e7%b3%bb%e7%bb%9f/leveldb/">LevelDB</a>
+</li>
+	</ul>
+</li>
+	<li class="cat-item cat-item-9"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f/">文件系统</a>
+	<ul class="children">
+	<li class="cat-item cat-item-10"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f/ext2/">EXT2</a>
+</li>
+	<li class="cat-item cat-item-22"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f/zfs/">ZFS</a>
+</li>
+	</ul>
+</li>
+	<li class="cat-item cat-item-19"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e7%ae%97%e6%b3%95%e5%92%8c%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84/">算法和数据结构</a>
+</li>
+	<li class="cat-item cat-item-11"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e7%bd%91%e7%bb%9c/">网络</a>
+</li>
+	<li class="cat-item cat-item-18"><a href="http://www.d-kai.me/category/%e6%8a%80%e6%9c%af/%e8%ae%be%e8%ae%a1%e6%a8%a1%e5%bc%8f/">设计模式</a>
+</li>
+</ul>
+</li>
+	<li class="cat-item cat-item-3"><a href="http://www.d-kai.me/category/%e8%af%97%e6%ad%8c/">诗歌</a>
+</li>
+		</ul>
+</aside>			</div>
+		</div>
+	</div>
+</div>
+				<footer>
+					<div id="footer">
+					    <a class="cd-top visible-lg cd-is-visible cd-fade-out"></a>
+						<div class="container">
+							<div class="row">
+								<div class="col-md-6 col-md-offset-3 text-center">
+									<p class="kratos-social-icons">
+																																																															</p>
+									<p>Copyright 2016 <a href="http://www.d-kai.me/">再见</a>. All Rights Reserved.<br>Theme: <a href="https://github.com/vtrois/kratos" target="_blank" rel="nofollow">Kratos</a> made by <a href="http://www.vtrois.com/" target="_blank" rel="nofollow">Vtrois</a><br><a href="http://www.miitbeian.gov.cn/" rel="external nofollow" target="_blank"></a></p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</div>
+		<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/modernizr.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/jquery.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/jquery.easing.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/bootstrap.min.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/jquery.waypoints.min.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/jquery.stellar.min.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/hoverIntent.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/superfish.js.下载"></script>
+<script type="text/javascript" src="./Linux文件预读(三) – 再见_files/kratos.js.下载"></script>
+	
+</body></html>
