@@ -641,8 +641,8 @@ unsigned int alarm(unsigned int seconds); 返回0或剩余的秒数，无失败�
 
 3.	阻塞的常规信号不支持排队，产生多次只记录一次。（后32个实时信号支持排队）
 ### 内核实现信号捕捉过程
-![](https://i.imgur.com/3Iu2yRK.png)
-
+<center>![](https://i.imgur.com/3Iu2yRK.png)
+====
 ## 例子
 * 练习：编写程序，测试你使用的计算机1秒钟能数多少个数。
 
@@ -834,7 +834,8 @@ unsigned int alarm(unsigned int seconds); 返回0或剩余的秒数，无失败�
 存储映射I/O (Memory-mapped I/O) 使一个磁盘文件与存储空间中的一个缓冲区相映射。于是当从缓冲区中取数据，就相当于读文件中的相应字节。于此类似，将数据存入缓冲区，则相应的字节就自动写入文件。这样，就可在不适用read和write函数的情况下，使用地址（指针）完成I/O操作。
 
 使用这种方法，首先应通知内核，将一个指定文件映射到存储区域中。这个映射工作可以通过mmap函数来实现。  
-![](https://i.imgur.com/pc4L5PY.png)
+<center>![](https://i.imgur.com/pc4L5PY.png)
+====
 ## mmap函数
     void *mmap(void *adrr, size_t length, int prot, int flags, int fd, off_t offset); 
 返回：成功：返回创建的映射区首地址；失败：MAP_FAILED宏
