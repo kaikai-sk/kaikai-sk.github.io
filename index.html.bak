@@ -33,5 +33,5 @@ layout: default
   </ol>
 
   {% include pagination.html %}
-	{% include share.html %}
+
 </div>
