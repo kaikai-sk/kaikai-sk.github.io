@@ -5,14 +5,13 @@ description: Linux环境下，进程地址空间相互独立，每个进程各�
 tags: 历史   
 ---
 
-<center>Linux进程之间的通信<center/>
-----
+Linux进程之间的通信
+
 
 Linux环境下，进程地址空间相互独立，每个进程各自有不同的用户地址空间。任何一个进程的全局变量在另一个进程中都看不到，所以进程和进程之间不能相互访问，要交换数据必须通过内核，在内核中开辟一块缓冲区，进程1把数据从用户空间拷到内核缓冲区，进程2再从内核缓冲区把数据读走，内核提供的这种机制称为进程间通信（IPC，InterProcess Communication）。  
 
-<center> ![](https://i.imgur.com/dDkq5Vn.png) <center/>
-----
-
+![](https://i.imgur.com/dDkq5Vn.png) 
+	
 在进程间完成数据传递需要借助操作系统提供特殊的方法，如：文件、管道、信号、共享内存、消息队列、套接字、命名管道等。随着计算机的蓬勃发展，一些方法由于自身设计缺陷被淘汰或者弃用。现今常用的进程间通信方式有：  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;① 管道 (使用最简单)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;② 信号 (开销最小)  
