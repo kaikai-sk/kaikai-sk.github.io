@@ -2,7 +2,7 @@
 layout: post
 title: 布隆过滤器的原理和实现
 description: 判断元素在不在集合里面
-tags: Hash
+tags: Linux   
 ---
 
 ### 什么情况下需要布隆过滤器？

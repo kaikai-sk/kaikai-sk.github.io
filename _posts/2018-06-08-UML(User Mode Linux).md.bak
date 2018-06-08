@@ -2,7 +2,7 @@
 layout: post
 title: UML（user mode Linux）内核调试
 description: Linux环境下，在用户态调试Linux内核
-tags: Linux内核调试   
+tags: Linux   
 ---
 
 一.搭建UML实验环境
