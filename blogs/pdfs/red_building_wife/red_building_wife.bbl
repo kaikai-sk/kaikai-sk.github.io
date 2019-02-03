@@ -1,0 +1,216 @@
+\begin{thebibliography}{10}
+
+\bibitem{effect_size}
+Effect size.
+\newblock \url{https://en.wikipedia.org/wiki/Effect_size}.
+
+\bibitem{Hard_Drive_Data_And_Stats}
+Hard drive data and stats.
+\newblock \url{https://www.backblaze.com/b2/hard-drive-test-data.html}.
+
+\bibitem{Botezatu:2016:PDR:2939672.2939699}
+Mirela~Madalina Botezatu, Ioana Giurgiu, Jasmina Bogojeska, and Dorothea
+  Wiesmann.
+\newblock Predicting disk replacement towards reliable data centers.
+\newblock In {\em Proceedings of the 22Nd ACM SIGKDD International Conference
+  on Knowledge Discovery and Data Mining}, KDD '16, pages 39--48, New York, NY,
+  USA, 2016. ACM.
+
+\bibitem{domingos1999metacost}
+Pedro Domingos.
+\newblock Metacost: A general method for making classifiers cost-sensitive.
+\newblock In {\em Proceedings of the fifth ACM SIGKDD international conference
+  on Knowledge discovery and data mining}, pages 155--164. ACM, 1999.
+
+\bibitem{Fernandez-Delgado:2014:WNH:2627435.2697065}
+Manuel Fern\'{a}ndez-Delgado, Eva Cernadas, Sen{\'e}n Barro, and Dinani Amorim.
+\newblock Do we need hundreds of classifiers to solve real world classification
+  problems?
+\newblock {\em J. Mach. Learn. Res.}, 15(1):3133--3181, January 2014.
+
+\bibitem{179135}
+Daniel Ford, Fran{\c c}ois Labelle, Florentina~I. Popovici, Murray Stokely,
+  Van-Anh Truong, Luiz Barroso, Carrie Grimes, and Sean Quinlan.
+\newblock Availability in globally distributed storage systems.
+\newblock In {\em Presented as part of the 9th {USENIX} Symposium on Operating
+  Systems Design and Implementation}, Vancouver, BC, 2010. {USENIX}.
+
+\bibitem{Giurgiu:2017:PDR:3154448.3154451}
+Ioana Giurgiu, Jacint Szabo, Dorothea Wiesmann, and John Bird.
+\newblock Predicting dram reliability in the field with machine learning.
+\newblock In {\em Proceedings of the 18th ACM/IFIP/USENIX Middleware
+  Conference: Industrial Track}, Middleware '17, pages 15--21, New York, NY,
+  USA, 2017. ACM.
+
+\bibitem{Hamerly2001Bayesian}
+Greg Hamerly and Charles Elkan.
+\newblock Bayesian approaches to failure prediction for disk drives.
+\newblock In {\em ICML}, 2001.
+
+\bibitem{Herodotou2014Scalable}
+Herodotos Herodotou, Bolin Ding, Shobana Balakrishnan, Geoff Outhred, and Percy
+  Fitter.
+\newblock Scalable near real-time failure localization of data center networks.
+\newblock pages 1689--1698, 2014.
+
+\bibitem{Huang2015Characterizing1}
+Song Huang, Song Fu, Quan Zhang, and Weisong Shi.
+\newblock Characterizing disk failures with quantified disk degradation
+  signatures: An early experience.
+\newblock In {\em Workload Characterization (IISWC), 2015 IEEE International
+  Symposium on}, pages 150--159. IEEE, 2015.
+
+\bibitem{Hughes2002Improved}
+G.~F. Hughes, J.~F. Murray, K.~Kreutz-Delgado, and C.~Elkan.
+\newblock Improved disk-drive failure warnings.
+\newblock {\em Reliability IEEE Transactions on}, 51(3):350--357, 2002.
+
+\bibitem{6177663}
+X.~Jin, E.~W.~M. Ma, L.~L. Cheng, and M.~Pecht.
+\newblock Health monitoring of cooling fans based on mahalanobis distance with
+  mrmr feature selection.
+\newblock {\em IEEE Transactions on Instrumentation and Measurement},
+  61(8):2222--2229, Aug 2012.
+
+\bibitem{Kamarthi2009Assessement}
+Sagar Kamarthi, Abe Zeid, and Yogesh Bagul.
+\newblock Assessement of current health of hard disk drives.
+\newblock In {\em IEEE International Conference on Automation Science and
+  Engineering}, pages 246--249, 2009.
+
+\bibitem{Lin:2018:PNF:3236024.3236060}
+Qingwei Lin, Ken Hsieh, Yingnong Dang, Hongyu Zhang, Kaixin Sui, Yong Xu,
+  Jian-Guang Lou, Chenggang Li, Youjiang Wu, Randolph Yao, Murali Chintalapati,
+  and Dongmei Zhang.
+\newblock Predicting node failure in cloud service systems.
+\newblock In {\em Proceedings of the 2018 26th ACM Joint Meeting on European
+  Software Engineering Conference and Symposium on the Foundations of Software
+  Engineering}, ESEC/FSE 2018, pages 480--490, New York, NY, USA, 2018. ACM.
+
+\bibitem{Mahdisoltani:2017:ISS:3154690.3154728}
+Farzaneh Mahdisoltani, Ioan Stefanovici, and Bianca Schroeder.
+\newblock Improving storage system reliability with proactive error prediction.
+\newblock In {\em Proceedings of the 2017 USENIX Conference on Usenix Annual
+  Technical Conference}, USENIX ATC '17, pages 391--402, Berkeley, CA, USA,
+  2017. USENIX Association.
+
+\bibitem{Murray:2005:MLM:1046920.1088699}
+Joseph~F. Murray, Gordon~F. Hughes, and Kenneth Kreutz-Delgado.
+\newblock Machine learning methods for predicting failures in hard drives: A
+  multiple-instance application.
+\newblock {\em J. Mach. Learn. Res.}, 6:783--816, December 2005.
+
+\bibitem{8416474}
+B.~Nie, J.~Xue, S.~Gupta, T.~Patel, C.~Engelmann, E.~Smirni, and D.~Tiwari.
+\newblock Machine learning models for gpu error prediction in a large scale hpc
+  system.
+\newblock In {\em 2018 48th Annual IEEE/IFIP International Conference on
+  Dependable Systems and Networks (DSN)}, pages 95--106, June 2018.
+
+\bibitem{Pitakrat:2013:CML:2465470.2465473}
+Teerat Pitakrat, Andr{\'e} van Hoorn, and Lars Grunske.
+\newblock A comparison of machine learning algorithms for proactive hard disk
+  drive failure detection.
+\newblock In {\em Proceedings of the 4th International ACM Sigsoft Symposium on
+  Architecting Critical Systems}, ISARCS '13, pages 1--10, New York, NY, USA,
+  2013. ACM.
+
+\bibitem{Rinc2017Disk}
+Carlos~A Rincón, Jehan~François Pâris, Ricardo Vilalta, Albert M~K Cheng,
+  and Darrell D~E Long.
+\newblock Disk failure prediction in heterogeneous environments.
+\newblock In {\em International Symposium on PERFORMANCE Evaluation of Computer
+  and Telecommunication Systems}, 2017.
+
+\bibitem{Schroeder:2007:DFR:1267903.1267904}
+Bianca Schroeder and Garth~A. Gibson.
+\newblock Disk failures in the real world: What does an mttf of 1,000,000 hours
+  mean to you?
+\newblock In {\em Proceedings of the 5th USENIX Conference on File and Storage
+  Technologies}, FAST '07, Berkeley, CA, USA, 2007. USENIX Association.
+
+\bibitem{Song2015Characterizing}
+Huang Song, Fu~Song, Zhang Quan, and Weisong Shi.
+\newblock Characterizing disk failures with quantified disk degradation
+  signatures: An early experience.
+\newblock In {\em IEEE International Symposium on Workload Characterization},
+  2015.
+
+\bibitem{5581600}
+Y.~Tan and X.~Gu.
+\newblock On predictability of system anomalies in real world.
+\newblock In {\em 2010 IEEE International Symposium on Modeling, Analysis and
+  Simulation of Computer and Telecommunication Systems}, pages 133--140, Aug
+  2010.
+
+\bibitem{ting1998inducing}
+Kai~Ming Ting.
+\newblock Inducing cost-sensitive trees via instance weighting.
+\newblock In {\em European Symposium on Principles of Data Mining and Knowledge
+  Discovery}, pages 139--147. Springer, 1998.
+
+\bibitem{Vishwanath:2010:CCC:1807128.1807161}
+Kashi~Venkatesh Vishwanath and Nachiappan Nagappan.
+\newblock Characterizing cloud computing hardware reliability.
+\newblock In {\em Proceedings of the 1st ACM Symposium on Cloud Computing},
+  SoCC '10, pages 193--204, New York, NY, USA, 2010. ACM.
+
+\bibitem{Wang2013A}
+Yu~Wang, Eden W.~M. Ma, Tommy W.~S. Chow, and K.~L. Tsui.
+\newblock A two-step parametric method for failure prediction in hard disk
+  drives.
+\newblock {\em IEEE Transactions on Industrial Informatics}, 10(1):419--430,
+  2013.
+
+\bibitem{Wang2013Online}
+Yu~Wang, Qiang Miao, E.~W.~M. Ma, Kwok~Leung Tsui, and M.~G. Pecht.
+\newblock Online anomaly detection for hard disk drives based on mahalanobis
+  distance.
+\newblock {\em IEEE Transactions on Reliability}, 62(1):136--145, 2013.
+
+\bibitem{Witten2005Data}
+Ian~H. Witten, Eibe Frank, and Mark~A. Hall.
+\newblock {\em Data Mining: Practical Machine Learning Tools and Techniques
+  (Third Edition)}.
+\newblock 机械工业出版社, 2005.
+
+\bibitem{7426410}
+C.~Xu, G.~Wang, X.~Liu, D.~Guo, and T.~Liu.
+\newblock Health status assessment and failure prediction for hard drives with
+  recurrent neural networks.
+\newblock {\em IEEE Transactions on Computers}, 65(11):3502--3508, Nov 2016.
+
+\bibitem{216071}
+Yong Xu, Kaixin Sui, Randolph Yao, Hongyu Zhang, Qingwei Lin, Yingnong Dang,
+  Peng Li, Keceng Jiang, Wenchi Zhang, Jian-Guang Lou, Murali Chintalapati, and
+  Dongmei Zhang.
+\newblock Improving service availability of cloud systems by predicting disk
+  error.
+\newblock In {\em 2018 {USENIX} Annual Technical Conference ({USENIX} {ATC}
+  18)}, pages 481--494, Boston, MA, 2018. {USENIX} Association.
+
+\bibitem{744151}
+J.~Yang and Feng-Bin Sun.
+\newblock A comprehensive review of hard-disk drive reliability.
+\newblock In {\em Annual Reliability and Maintainability. Symposium. 1999
+  Proceedings (Cat. No.99CH36283)}, pages 403--409, Jan 1999.
+
+\bibitem{Yu2011Health}
+Wangi Yu, Qiang Miao, and Michael Pecht.
+\newblock Health monitoring of hard disk drive based on mahalanobis distance.
+\newblock In {\em Prognostics and System Health Management Conference}, pages
+  1--8, 2011.
+
+\bibitem{Zhao:2010:PDF:1880672.1880707}
+Ying Zhao, Xiang Liu, Siqing Gan, and Weimin Zheng.
+\newblock Predicting disk failures with hmm- and hsmm-based approaches.
+\newblock In {\em Proceedings of the 10th Industrial Conference on Advances in
+  Data Mining: Applications and Theoretical Aspects}, ICDM'10, pages 390--404,
+  Berlin, Heidelberg, 2010. Springer-Verlag.
+
+\bibitem{Zhu2013Proactive}
+Bingpeng Zhu, Gang Wang, Xiaoguang Liu, Dianming Hu, Sheng Lin, and Jingwei Ma.
+\newblock Proactive drive failure prediction for large scale storage systems.
+\newblock In {\em MASS Storage Systems and Technologies}, pages 1--5, 2013.
+
+\end{thebibliography}

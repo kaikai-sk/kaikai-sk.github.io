@@ -1,0 +1,19 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: red_building_wife.aux
+The style file: plain.bst
+Illegal, another \bibstyle command---line 175 of file red_building_wife.aux
+ : \bibstyle
+ :          {IEEEtran}
+I'm skipping whatever remains of this command
+Database file #1: sk_bib.bib
+Repeated entry---line 74 of file sk_bib.bib
+ : @article{Hughes2002Improved
+ :                            ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 384 of file sk_bib.bib
+ : @inproceedings{Kamarthi2009Assessement
+ :                                       ,
+I'm skipping whatever remains of this entry
+Warning--to sort, need author or key in Hard_Drive_Data_And_Stats
+Warning--to sort, need author or key in effect_size
+Warning--empty booktitle in Herodotou2014Scalable
+(There were 3 error messages)
