@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang = "en">
+
+<head>
+	<meta charset="utf-8">
+	<title>宜家图片展示</title>
+
+	<style type="text/css">
+		*{padding:0px;margin: opx;}
+		body{background:#000;}
+
+		#photos{
+			width: 110px ;
+			height: 180px ;
+			border: 1px solid #ccc ;
+			margin: 160px auto ;
+			transform: rotateX(-10deg);
+			transform: rotateY(0deg);
+			transform-style: preserve-3d;
+			perspective: 800px ;
+
+		}
+
+		#photos img{
+			width: 160% ;
+			height: 180% ;
+			position: absolute;
+			box-shadow: 0 0 8px #eaeaea ;
+			box-shadow: 1px -1px 6px #666 ;
+			border-radius: 4px ;
+			-webkit-box-reflect:below 3px -webkit-linear-gradient(top,rgba(0,0,0,0) 40%,rgba(0,0,0,0.5)) ;
+			cursor: pointer;
+
+		}
+
+		#photos div{
+			width: 3600px ;
+			height: 4800px ;
+			border-radius: 50% ;
+			position:absolute;
+			top:102%;
+			left:50%;
+			margin-left:-600px;
+			margin:-top:-600px;
+			transform:rotateX(90deg);
+			background: -webkit-radial-gradient(center center,600px,rgba(158,158,222,0.5),rgba(0,0,0,0)) ; 
+		}
+	</style>
+</head>
+
+<body>
+	<div id = "photos">
+
+		<img src="images/yijia/yijia_1.jpg"/>
+		<img src="images/yijia/yijia_2.jpg"/>
+		<img src="images/yijia/yijia_3.jpg"/>
+		<img src="images/yijia/yijia_4.jpg"/>
+		<img src="images/yijia/yijia_5.jpg"/>
+		<img src="images/yijia/yijia_6.jpg"/>
+		<img src="images/yijia/yijia_7.jpg"/>
+		<img src="images/yijia/yijia_8.jpg"/>
+		<img src="images/yijia/yijia_9.jpg"/>
+		<img src="images/yijia/yijia_10.jpg"/>
+		<img src="images/yijia/yijia_11.jpg"/>
+		
+	</div>
+	
+</body>
+
+<script type="text/javascript">
+	var photosDom = document.getElementById('photos') ;
+
+	var images = photosDom.getElementsByTagName('img') ;
+
+	var len = images.length ;
+
+	var deg = Math.floor(360/len)  ;
+
+	for( var i = 0 ;i<len ;i++ ){
+		images[i].style = 'transform:rotateY('+deg*i+'deg) translateZ(300px)' ;
+	}
+
+	var x = 0 ;
+	setInterval(function(){
+		photosDom.style.transform = "rotateX(-10deg) rotateY(" +(x++) *0.2 +"deg)";
+	},30) ;
+	
+</script>
+
+</html>
