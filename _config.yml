@@ -42,6 +42,7 @@ baidu:
 #
 # 《--------------- 下面的信息可以自行选择是否修改 ------------------------》
 
+encoding: UTF-8
 
 permalink: /:year/:month/:title/
 # Format
