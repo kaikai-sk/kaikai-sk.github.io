@@ -1,5 +1,6 @@
 ﻿---
-layout: page
+layout: post
+title: LeetCode之螺旋矩阵II
 ---
 
 # 1. 题目描述
