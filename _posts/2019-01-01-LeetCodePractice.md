@@ -8,6 +8,6 @@ tags: 算法
 
 ### 矩阵
 
-* [LeetCode之螺旋矩阵II](https://kaikai-sk.github.io/blogs/mds/LeetCode/Matrix/LeetCode之螺旋矩阵II.md)
+* [LeetCode之螺旋矩阵II](https://kaikai-sk.github.io/blogs/mds/LeetCode/Matrix/LeetCode之螺旋矩阵II)
 
 ### 树
