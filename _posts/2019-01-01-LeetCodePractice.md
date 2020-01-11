@@ -15,6 +15,10 @@ tags: 算法
 ### 线性表
 
 * [LeetCode之链表环入口](https://kaikai-sk.github.io/blogs/mds/LeetCode/List/LeetCode之链表环入口)
+* [LeetCode之链表的归并排序](https://kaikai-sk.github.io/blogs/mds/LeetCode/List/LeetCode之链表的归并排序)
+* [LeetCode之链表的交点](https://kaikai-sk.github.io/blogs/mds/LeetCode/List/LeetCode之链表的交点)
+* [LeetCode之LRU算法](https://kaikai-sk.github.io/blogs/mds/LeetCode/List/LeetCode之LRU算法)
+
 
 ### 矩阵
 
