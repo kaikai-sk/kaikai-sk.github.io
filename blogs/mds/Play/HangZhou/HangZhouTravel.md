@@ -52,7 +52,63 @@ tags: 吃喝玩乐
 
 <1> 小桥流水幽径
 
+&emsp;&emsp;1.1 花
 
+<table border="0">
+	<tr>
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/FlowerAndBoat.jpg" 
+						alt="Sample"  width="400" height="300">
+				<p align="center">
+					<em>花和小船</em>
+				</p>
+			</p>
+		</td>
+		
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/FlowerAndSky.jpg" 
+						alt="Sample"  width="432" height="576">
+				<p align="center">
+					<em>花和天空</em>
+				</p>
+			</p>
+		</td>
+		
+	</tr>
+</table>
+
+&emsp;&emsp;1.2 小桥
+
+<p align="center">
+	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/SmallBridge.jpg" 
+	       alt="Sample"  width="375" height="500">
+	<p align="center">
+		<em>小桥</em>
+	</p>
+</p>
+
+
+&emsp;&emsp;1.3 塔
+
+<p align="center">
+	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/Tower.jpg" 
+	       alt="Sample"  width="375" height="500">
+	<p align="center">
+		<em>塔</em>
+	</p>
+</p>
+
+&emsp;&emsp;1.4 树
+
+<p align="center">
+	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/WaiTree.jpg" 
+	       alt="Sample"  width="375" height="500">
+	<p align="center">
+		<em>观音精舍内主体</em>
+	</p>
+</p>
 
 <2> 观音禅院
 
