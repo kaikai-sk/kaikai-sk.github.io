@@ -50,7 +50,7 @@ tags: 吃喝玩乐
 
 景点有：
 
-&emsp;&emsp;<1> 小桥流水幽径
+<1> 小桥流水幽径
 
 
 
@@ -58,23 +58,37 @@ tags: 吃喝玩乐
 
 淡季的时候几乎没有人，比较安静，我比较喜欢，可以拍到比较好的景色的。
 
-2.1 门
+&emsp;&emsp;2.1 门
 
-<p align="center">
-	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhengMen.jpg" 
-	       alt="Sample"  width="576" height="432">
-	<p align="center">
-		<em>观音精舍正门</em>
-	</p>
-</p>
+<table border="0">
+	<tr>
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhengMen.jpg" 
+						alt="Sample"  width="576" height="432">
+				<p align="center">
+					<em>观音精舍正门</em>
+				</p>
+			</p>
+		</td>
+		
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/XiaoMen.jpg" 
+						alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>观音精舍一个小门</em>
+				</p>
+			</p>
+		</td>
+		
+	</tr>
+</table>
 
-<p align="center">
-	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/XiaoMen.jpg" 
-	       alt="Sample"  width="375" height="500">
-	<p align="center">
-		<em>观音精舍一个小门</em>
-	</p>
-</p>
+
+
+
+
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/YuanMen.jpg" 
