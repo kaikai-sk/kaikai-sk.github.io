@@ -50,18 +50,19 @@ tags: 吃喝玩乐
 
 景点有：
 
-<1> 小桥流水幽径
+&emsp;&emsp;<1> 小桥流水幽径
 
 
 
 <2> 观音禅院
+
 淡季的时候几乎没有人，比较安静，我比较喜欢，可以拍到比较好的景色的。
 
-	- 门
+2.1 门
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhengMen.jpg" 
-	       alt="Sample"  width="" height="187.5">
+	       alt="Sample"  width="576" height="432">
 	<p align="center">
 		<em>观音精舍正门</em>
 	</p>
@@ -69,7 +70,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/XiaoMen.jpg" 
-	       alt="Sample"  width="576" height="432">
+	       alt="Sample"  width="375" height="500">
 	<p align="center">
 		<em>观音精舍一个小门</em>
 	</p>
@@ -91,7 +92,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-	- 精舍主体
+2.2 精舍主体
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/NeiDian.jpg" 
@@ -101,7 +102,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-	- 屋檐下垂莲花
+2.3 屋檐下垂莲花
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/LianHua.jpg" 
@@ -111,7 +112,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-	- 佛塔
+2.4 佛塔
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/FoTa.jpg" 
@@ -121,7 +122,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-	- 桌上世界
+2.5 桌上世界
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhuoShangShiJie.jpg" 
