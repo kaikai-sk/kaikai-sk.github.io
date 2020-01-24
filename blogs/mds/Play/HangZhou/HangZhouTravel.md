@@ -41,7 +41,9 @@ tags: 吃喝玩乐
 
 需要一个下午的时间；
 
-门票 + 船票：100/ 人；  杭州会有一些滴滴司机什么的有路子，会搞到票，票是真的，也比美团携程上面的标价便宜一些，这个可以考虑的。
+门票 + 船票：100/ 人；  
+
+杭州会有一些滴滴司机什么的有路子，会搞到票，票是真的，也比美团携程上面的标价便宜一些，这个可以考虑的。
 
 杭州西溪湿地是分三部分的，上边的票是西边一部分的。坐船绕一个圈，有停靠的码头是可以下来步行游览的。我觉得不行游览就可以了。可以在
 第一个码头下船，在洪园码头上船回来。
@@ -54,7 +56,7 @@ tags: 吃喝玩乐
 <2> 观音禅院
 淡季的时候几乎没有人，比较安静，我比较喜欢，可以拍到比较好的景色的。
 
-- 门
+	- 门
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhengMen.jpg" 
@@ -88,7 +90,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-- 精舍主体
+	- 精舍主体
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/NeiDian.jpg" 
@@ -98,7 +100,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-- 屋檐下垂莲花
+	- 屋檐下垂莲花
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/LianHua.jpg" 
@@ -108,7 +110,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-- 佛塔
+	- 佛塔
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/FoTa.jpg" 
@@ -118,7 +120,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-- 桌上世界
+	- 桌上世界
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhuoShangShiJie.jpg" 
