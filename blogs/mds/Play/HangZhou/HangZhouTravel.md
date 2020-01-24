@@ -49,6 +49,7 @@ tags: 吃喝玩乐
 第一个码头下船，在洪园码头上船回来。
 
 景点有：
+
 <1> 小桥流水幽径
 
 
@@ -60,7 +61,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhengMen.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="" height="187.5">
 	<p align="center">
 		<em>观音精舍正门</em>
 	</p>
@@ -68,7 +69,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/XiaoMen.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="576" height="432">
 	<p align="center">
 		<em>观音精舍一个小门</em>
 	</p>
@@ -145,7 +146,7 @@ tags: 吃喝玩乐
 
 河坊街跟各地的小吃街大同小异，食物、文艺品应有尽有。
 
-热腾腾的南京烤鸭卷卷、肉饼、奶茶、龙井饼、小黄鱼等等，
+热腾腾的南京烤鸭卷卷、肉饼、奶茶、龙井糕、小黄鱼等等，
 
 * 第二天
 
