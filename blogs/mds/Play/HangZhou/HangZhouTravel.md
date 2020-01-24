@@ -85,28 +85,31 @@ tags: 吃喝玩乐
 	</tr>
 </table>
 
+<table>
+	<tr>
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/YuanMen.jpg" 
+					alt="Sample"  width="500" height="375">
+				<p align="center">
+					<em>观音精舍一个圆门正面</em>
+				</p>
+			</p>
+		</td>
+		
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/TuoYuanMen.jpg" 
+					alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>观音精舍一个圆门侧面</em>
+				</p>
+			</p>
+		</td>
+	</tr>
+</table>
 
-
-
-
-
-<p align="center">
-	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/YuanMen.jpg" 
-	       alt="Sample"  width="250" height="187.5">
-	<p align="center">
-		<em>观音精舍一个圆门正面</em>
-	</p>
-</p>
-
-<p align="center">
-	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/TuoYuanMen.jpg" 
-	       alt="Sample"  width="250" height="187.5">
-	<p align="center">
-		<em>观音精舍一个圆门侧面</em>
-	</p>
-</p>
-
-2.2 精舍主体
+&emsp;&emsp;2.2 精舍主体
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/NeiDian.jpg" 
@@ -116,7 +119,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-2.3 屋檐下垂莲花
+&emsp;&emsp;2.3 屋檐下垂莲花
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/LianHua.jpg" 
@@ -126,7 +129,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-2.4 佛塔
+&emsp;&emsp;2.4 佛塔
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/FoTa.jpg" 
@@ -136,7 +139,7 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
-2.5 桌上世界
+&emsp;&emsp;2.5 桌上世界
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhuoShangShiJie.jpg" 
