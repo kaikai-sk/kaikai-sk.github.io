@@ -113,7 +113,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/NeiDian.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="500" height="375">
 	<p align="center">
 		<em>观音精舍内主体</em>
 	</p>
@@ -123,7 +123,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/LianHua.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="375" height="500">
 	<p align="center">
 		<em>观音精舍房檐下垂的莲花</em>
 	</p>
@@ -133,7 +133,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/FoTa.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="375" height="500">
 	<p align="center">
 		<em>观音精舍一小塔</em>
 	</p>
@@ -143,7 +143,7 @@ tags: 吃喝玩乐
 
 <p align="center">
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/GuanYinChanYuan/ZhuoShangShiJie.jpg" 
-	       alt="Sample"  width="250" height="187.5">
+	       alt="Sample"  width="576" height="432">
 	<p align="center">
 		<em>观音精舍桌上世界</em>
 	</p>
