@@ -31,6 +31,8 @@ tags: 吃喝玩乐
 
 青芝坞，临近西湖，小桥流水的民宿聚集地，有很多网红餐厅。
 
+青芝坞离着浙大玉泉校区比较近，如果有同学什么的可以一去去西湖逛逛。
+
 ### 游玩路线
 
 * 第一天
@@ -106,7 +108,7 @@ tags: 吃喝玩乐
 	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/XiXiShiDi/BridgeWaterPathFlowers/WaiTree.jpg" 
 	       alt="Sample"  width="375" height="500">
 	<p align="center">
-		<em>观音精舍内主体</em>
+		<em>树</em>
 	</p>
 </p>
 
@@ -205,12 +207,22 @@ tags: 吃喝玩乐
 	</p>
 </p>
 
+<3> 洪园
+
+洪家是当地一代望族，家里出了学士、宰相。人臣年老了，归隐西溪湿地，空气清新，逍遥自在，在古代都活到八九十岁，真是快哉啊。
+另外，听导游小姐姐，介绍了一本《洪斋随笔》，写了洪家主人几十年所想所感，据说毛主席时常翻阅，临终也带在身边。
+应该是一本好书，回头也去拜读一下才好。
+
+<4> 返程
+
+行船穿行在湿地中间，可以在树枝上观赏到多种多样的鸟类。
+正是冬季树叶凋零，那些鸟类的身影才如此明显，抬头一看，便轻易能看到“肥硕”的鸟儿立在树枝末端，我还真怕那细枝承受不住它的重量断了啊。
 
 (2) 南山南文艺餐厅
 
 这里就在青芝坞，在这里吃午餐的。这里的价格应该还是可以的，可以接受
 
-南山香烤鸡、扬州炒饭、西湖牛肉羹和上汤西兰花。这边的口味比较清淡，但是又能把食物原始的风味尽显。
+南山香烤鸡、扬州炒饭（不错）、西湖牛肉羹（不错）和上汤西兰花。这边的口味比较清淡，但是又能把食物原始的风味尽显。
 
 (3) 河坊街
 
@@ -220,9 +232,93 @@ tags: 吃喝玩乐
 
 河坊街跟各地的小吃街大同小异，食物、文艺品应有尽有。
 
-热腾腾的南京烤鸭卷卷、肉饼、奶茶、龙井糕、小黄鱼等等，
+热腾腾的片皮鸭、鲜肉榨菜饼、奶茶、龙井糕（号称杭州七宝）、小黄鱼（号称杭州七宝）等等。
+
+<table>
+	<tr>
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/HeFangJie/zhacaibingCover.jpg" 
+					alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>榨菜饼包装</em>
+				</p>
+			</p>
+		</td>
+		
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/HeFangJie/zhacaibing.jpg" 
+					alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>榨菜饼</em>
+				</p>
+			</p>
+		</td>
+	</tr>
+</table>
+
+<p align="center">
+	<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/HeFangJie/pianpiya.jpg" 
+	       alt="Sample"  width="375" height="500">
+	<p align="center">
+		<em>片皮鸭</em>
+	</p>
+</p>
+
 
 * 第二天
+
+(1) 上午断桥残雪，白堤
+
+断桥残雪。断桥是横卧在西湖的一座石桥，在雪天或者雾气氤氲的时候，看似好像被隔断了一样吧。
+因为西湖边湖天辽阔，看起来干净留白，白色的雪或者雾气很容易与天连成一片。不过，我们没有亲眼见到这一番美景，就脑海里想象好了。
+
+断桥这里是一个很矛盾的地方欧。断桥是白蛇和许仙认识的地方，但是名字里面有个“断”，如果有点迷信的情侣还是不要第一站就来这里吧。这里随便一说
+，仁者见仁，智者见智。
+
+(2) 同龄阁吃午饭
+
+同龄阁点了杭三鲜、春卷（这个也不错）、杭州面疙瘩（个人喜欢这个）。杭三鲜里面有竹荪、蛋饺、木耳、基围虾、
+鸡肉和西蓝花，品种非常丰富，分量也很足，就是太清淡，可能厨师手没抖到位，盐加少了，吃起来味道不太美。
+春卷比较特色，跟其他地方油腻腻的感觉不同，这个春卷里面包的东西面面的、甜甜的，外表是油炸的，脆而不油，
+蘸一丢丢甜面酱，吃起来别有风味。杭州面疙瘩是长条状，中间胖两边又尖又细，这道菜厨师盐加的很到位，虽然没有特别多配菜，
+但味道可美。
+
+(3) 下午，苏堤，雷峰塔
+
+冬天的话，这边还是有点萧瑟。
+
+白堤苏堤走下来还是有点累的。年纪大了，基本上从雷峰塔出来就走不动了。（这点还是需要注意，我觉得我还听能走的，这点自行体会）
+
+雷峰塔纠结着许仙、白蛇与法海的爱恨情仇。景区设施非常方便，有扶梯和电梯，即使是腿脚不便的人也可以轻松赏玩一番。
+登上塔顶，可以看见三潭映月和整个西湖的美景。远方的山、建筑都离我们很近的感觉，从下面看起来宽阔的湖面在上面看起来并不大，
+可以看到几十艘摇橹船在湖中轻飘飘地飘荡着，好不自在啊。
+
+<table>
+	<tr>
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/LeiFengTa/leifengta1.jpg" 
+					alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>雷峰塔</em>
+				</p>
+			</p>
+		</td>
+		
+		<td>
+			<p align="center">
+				<img src="http://kaikai-sk.github.io/blogs/mds/Play/HangZhou/LeiFengTa/leifengta2.jpg" 
+					alt="Sample"  width="375" height="500">
+				<p align="center">
+					<em>雷峰塔</em>
+					<em>雷峰塔</em>
+				</p>
+			</p>
+		</td>
+	</tr>
+</table>
 
 
 ### 本文地址
