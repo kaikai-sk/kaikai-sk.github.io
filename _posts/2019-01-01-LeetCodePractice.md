@@ -77,7 +77,9 @@ tags: 算法
 
 * [LeetCode之盛水最多的容器](https://kaikai-sk.github.io/blogs/mds/LeetCode/DoublePointer/LeetCode之盛水最多的容器)
 
+### 本文地址
 
+https://kaikai-sk.github.io/2019/01/LeetCodePractice/
 
 
 
