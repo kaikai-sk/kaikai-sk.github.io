@@ -212,6 +212,9 @@ hr面都没面，把老子是释放了。又要重新面试。f**k
 <7>
 <8>
 
+### 2018年终总结
+
+https://kaikai-sk.github.io/blogs/mds/NianZhongZongJie/2018年终总结
 
 ### 本文地址
 
