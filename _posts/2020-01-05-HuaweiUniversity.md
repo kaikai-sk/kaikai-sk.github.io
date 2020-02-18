@@ -10,4 +10,8 @@ tags: 华为
 笔记链接：
 https://kaikai-sk.github.io/blogs/docs/奋斗在菊厂课程笔记.docx
 
+### 审辨式思维
+
+
+
 
