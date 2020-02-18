@@ -12,6 +12,8 @@ https://kaikai-sk.github.io/blogs/docs/奋斗在菊厂课程笔记.docx
 
 ### 审辨式思维
 
+https://kaikai-sk.github.io/blogs/mds/HuaweiUniversity/审辨式思维
+
 
 
 
