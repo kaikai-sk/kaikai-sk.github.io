@@ -3,15 +3,22 @@
 # 1 笛卡尔心形线
 ## 1.1 故事
 **迩来流浪于吴越，一片闲云空皎洁。** 
+
 几百年前，斯德哥尔摩的街头，落魄的笛卡尔过着乞讨的生活。他不会乞讨，知识沉浸在数学王国之中
+
 **有美一人，婉如清扬。邂逅相遇，与子偕臧。**
+
 瑞典的小公主，国王最宠爱的女儿克里斯汀在街头碰到了笛卡尔，被其草稿纸上的数学所吸引，遂聘请笛卡尔为数学老师。
+
 **情不知所起,一往而深**
+
 两个人整天在一起，耳鬓厮磨，结果可想而知
+
 **念去去，千里烟波，暮霭沉沉楚天阔。**
 笛卡尔和公主的恋情收到了国王的阻拦，国王驱逐了笛卡尔。
 
 中世纪的欧洲，黑死病流行，病痛中的笛卡尔只能在脑海中见到他的公主了。
+
 **欲知心里事,看取腹中书. **
 笛卡尔寄出了无数封信，只有最后一封送到了公主的手里。等到公主收到信的时候，笛卡尔早已去世。
 
@@ -20,7 +27,9 @@
 国王去世后，克里斯汀继承王位，便立刻派人去法国寻找心上人的下落，收到的却是笛卡尔去世的消息，留下了一个永远的遗憾……
 
 ## 1.2 python实现
+
 * 代码
+
 ```
 # 绘制笛卡尔心形线
 # r = a(1-sinθ)
@@ -35,9 +44,13 @@ def draw_dikaer_love_func():
 ```
 * 效果
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200519091242412.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2thaWthaV9zaw==,size_16,color_FFFFFF,t_70#pic_center)
+
 # 2 一束玫瑰
+
 ## 2.1 Python实现
+
 * 代码
+
 ```
 def eps_to_jpg(eps_filename,jpg_filename):
     from PIL import Image
@@ -148,5 +161,7 @@ def draw_flower():
 
     eps_to_jpg("duck.eps","flower.jpg")
 ```
+
 * 效果
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200519095610174.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2thaWthaV9zaw==,size_16,color_FFFFFF,t_70#pic_center)
