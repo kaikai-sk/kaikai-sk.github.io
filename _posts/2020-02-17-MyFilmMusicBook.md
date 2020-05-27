@@ -12,6 +12,8 @@ tags: 影音书
 
 * [毕业](https://kaikai-sk.github.io/blogs/mds/Book/GraduageDongYeGuiWu)
 
+* [草房子](https://kaikai-sk.github.io/blogs/mds/Book/草房子)
+
 * []()
 
 ### 电影 & 电视剧
